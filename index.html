@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MERIDIAN · Terminal Macro IA</title>
+<style>
+:root{--bg:#07080b;--panel:#0d1016;--panel2:#11151d;--line:#1c2230;--line2:#28303f;--txt:#e9e7e2;--muted:#8a93a5;--gold:#d9b26a;--up:#2fd48a;--down:#ff5d6c;--teal:#43d7c4;--amber:#f2b25c}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;font-size:13px;line-height:1.45;-webkit-font-smoothing:antialiased}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;font-variant-numeric:tabular-nums}
+.app{max-width:1440px;margin:0 auto;padding:0 18px 40px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 0 14px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand b{font-size:17px;letter-spacing:.22em;font-weight:600;color:var(--gold)}
+.brand span{font-size:10px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.hstat{display:flex;align-items:center;gap:14px;font-size:11px;color:var(--muted)}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--up);margin-right:6px}
+button{font:inherit;color:var(--txt);background:var(--panel2);border:1px solid var(--line2);padding:6px 12px;border-radius:6px;cursor:pointer}
+button:hover{border-color:var(--gold);color:var(--gold)}
+.ticker{display:flex;overflow-x:auto;border-bottom:1px solid var(--line);scrollbar-width:none}
+.ticker::-webkit-scrollbar{display:none}
+.tick{flex:1 0 auto;padding:10px 14px;border-right:1px solid var(--line);min-width:112px}
+.tick .p{font-size:10px;letter-spacing:.1em;color:var(--muted)}
+.tick .v{font-size:13px}
+.tick .c{font-size:11px}
+.up{color:var(--up)}.down{color:var(--down)}.flat{color:var(--muted)}
+nav{display:flex;gap:2px;overflow-x:auto;padding:12px 0;border-bottom:1px solid var(--line);scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{background:none;border:none;border-bottom:2px solid transparent;border-radius:0;color:var(--muted);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:7px 12px;white-space:nowrap}
+nav button.on{color:var(--gold);border-bottom-color:var(--gold)}
+main{padding-top:20px}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:1080px){.g4{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}}
+@media(max-width:620px){.g4{grid-template-columns:1fr}}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:10px;padding:14px 15px}
+.card h3{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:10px}
+.big{font-size:26px;font-weight:600;letter-spacing:-.01em}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(40,48,63,.45)}
+.kv:last-child{border-bottom:none}
+.kv span:first-child{color:var(--muted)}
+.sig{display:flex;flex-direction:column;gap:9px}
+.sig .top{display:flex;align-items:center;justify-content:space-between}
+.sig .pair{font-size:15px;font-weight:600;letter-spacing:.02em}
+.badge{font-size:10px;letter-spacing:.12em;padding:3px 8px;border-radius:4px;border:1px solid}
+.b-long{color:var(--up);border-color:rgba(47,212,138,.4);background:rgba(47,212,138,.09)}
+.b-short{color:var(--down);border-color:rgba(255,93,108,.4);background:rgba(255,93,108,.09)}
+.b-flat{color:var(--muted);border-color:var(--line2);background:rgba(138,147,165,.07)}
+.bar{height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.bar i{display:block;height:100%}
+.note{font-size:12px;color:#c3c8d2}
+.why{font-size:12px;color:#b6bcc8;border-left:2px solid var(--line2);padding-left:10px;list-style:none}
+.why li{margin-bottom:4px}
+.why li:before{content:"— ";color:var(--gold)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:500;padding:7px 8px;border-bottom:1px solid var(--line2);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid rgba(28,34,48,.8);white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(217,178,106,.035)}
+.r{text-align:right}
+.pill{font-size:9.5px;letter-spacing:.08em;padding:2px 6px;border-radius:3px}
+.i-High{background:rgba(255,93,108,.12);color:#ff8894}
+.i-Medium{background:rgba(242,178,92,.12);color:var(--amber)}
+.i-Low{background:rgba(138,147,165,.1);color:var(--muted)}
+.i-Holiday{background:rgba(67,215,196,.1);color:var(--teal)}
+.heat{width:100%;border-collapse:separate;border-spacing:2px;font-size:10.5px}
+.heat td{text-align:center;padding:5px 2px;border-radius:3px;border:none}
+.heat th{text-align:center}
+.hm{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.hm .nm{width:34px;font-size:11px;color:var(--muted)}
+.hm .tr{flex:1;height:16px;background:var(--line);border-radius:3px;overflow:hidden}
+.hm .tr i{display:block;height:100%;opacity:.85}
+.hm .vl{width:38px;text-align:right;font-size:11px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.split{grid-template-columns:1fr}}
+h2.sec{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:22px 0 10px}
+.legend{font-size:11px;color:var(--muted);margin-top:8px}
+footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);font-size:10.5px;color:#6b7385;line-height:1.6}
+.warn{background:rgba(242,178,92,.07);border:1px solid rgba(242,178,92,.25);border-radius:8px;padding:11px 13px;font-size:11.5px;color:#d8cbb0}
+.small{font-size:11px;color:var(--muted)}
+a{color:var(--gold);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand"><b>MERIDIAN</b><span>Macro intelligence terminal</span></div>
+    <div class="hstat">
+      <span><span class="dot"></span><span id="feed">instantané chargé</span></span>
+      <span class="mono" id="clock"></span>
+      <button id="refresh">Actualiser</button>
+    </div>
+  </header>
+  <div class="ticker" id="ticker"></div>
+  <nav id="nav"></nav>
+  <main id="view"></main>
+  <footer>
+    <b>Sources.</b> Calendrier économique : Forex Factory (flux hebdomadaire). Change et historique : Frankfurter (référence BCE). Taux directeurs : Fed H.15, BCE, BoE, BoJ, SNB, RBA, BoC, RBNZ. Anticipations : contrats à terme de taux, relevé du 20 novembre 2026.
+    <br><b>Portée.</b> Lectures directionnelles produites par un modèle quantitatif transparent (momentum 5 séances, force relative, portage, risque événementiel), avec mesure de réussite hors échantillon. Ni conseil en investissement, ni exécution d'ordres.
+  </footer>
+</div>
+<script>
+var DATA={"generated_at":"2026-11-24T12:30:00Z","fx":{"latest":{"base":"USD","date":"2026-11-23","rates":{"EUR":0.91416,"GBP":0.76491,"JPY":159.07,"CHF":0.83975,"AUD":1.5113,"NZD":1.8355,"CAD":1.4362}},"hist":{"base":"USD","rates":{"2025-10-31":{"EUR":0.8655,"GBP":0.76303,"JPY":154.18,"CHF":0.80379,"AUD":1.5295,"NZD":1.7494,"CAD":1.4027},"2025-11-03":{"EUR":0.86851,"GBP":0.76125,"JPY":154.22,"CHF":0.80754,"AUD":1.5283,"NZD":1.7506,"CAD":1.4044},"2025-11-04":{"EUR":0.87025,"GBP":0.76538,"JPY":153.5,"CHF":0.80889,"AUD":1.5396,"NZD":1.7665,"CAD":1.4079},"2025-11-05":{"EUR":0.87017,"GBP":0.76662,"JPY":153.73,"CHF":0.80987,"AUD":1.5423,"NZD":1.7707,"CAD":1.413},"2025-11-06":{"EUR":0.86708,"GBP":0.76363,"JPY":153.6,"CHF":0.80777,"AUD":1.5345,"NZD":1.7648,"CAD":1.4092},"2025-11-07":{"EUR":0.86498,"GBP":0.76213,"JPY":153.09,"CHF":0.80547,"AUD":1.5429,"NZD":1.7792,"CAD":1.4109},"2025-11-10":{"EUR":0.86423,"GBP":0.75862,"JPY":154.1,"CHF":0.80529,"AUD":1.5306,"NZD":1.7726,"CAD":1.4012},"2025-11-11":{"EUR":0.86393,"GBP":0.7606,"JPY":154.18,"CHF":0.80156,"AUD":1.5324,"NZD":1.7692,"CAD":1.4025},"2025-11-12":{"EUR":0.86386,"GBP":0.76218,"JPY":154.79,"CHF":0.79907,"AUD":1.5287,"NZD":1.765,"CAD":1.4008},"2025-11-13":{"EUR":0.86066,"GBP":0.75902,"JPY":154.55,"CHF":0.79559,"AUD":1.5253,"NZD":1.765,"CAD":1.4005},"2025-11-14":{"EUR":0.85852,"GBP":0.75944,"JPY":153.86,"CHF":0.78855,"AUD":1.5322,"NZD":1.759,"CAD":1.402},"2025-11-17":{"EUR":0.86259,"GBP":0.75865,"JPY":154.9,"CHF":0.79574,"AUD":1.5352,"NZD":1.7652,"CAD":1.4034},"2025-11-18":{"EUR":0.86281,"GBP":0.76109,"JPY":155.25,"CHF":0.79664,"AUD":1.5384,"NZD":1.7652,"CAD":1.4027},"2025-11-19":{"EUR":0.86333,"GBP":0.76207,"JPY":156.13,"CHF":0.80152,"AUD":1.5413,"NZD":1.7772,"CAD":1.4012},"2025-11-20":{"EUR":0.86851,"GBP":0.76559,"JPY":157.61,"CHF":0.80719,"AUD":1.5436,"NZD":1.7811,"CAD":1.4065},"2025-11-21":{"EUR":0.86806,"GBP":0.76415,"JPY":156.74,"CHF":0.80634,"AUD":1.5515,"NZD":1.7847,"CAD":1.4085},"2025-11-24":{"EUR":0.86625,"GBP":0.76265,"JPY":156.98,"CHF":0.80769,"AUD":1.5487,"NZD":1.7785,"CAD":1.4102},"2025-11-25":{"EUR":0.86573,"GBP":0.7608,"JPY":156.19,"CHF":0.80902,"AUD":1.5477,"NZD":1.7837,"CAD":1.4112},"2025-11-26":{"EUR":0.86378,"GBP":0.75805,"JPY":156.42,"CHF":0.80686,"AUD":1.5391,"NZD":1.7617,"CAD":1.4087},"2025-11-27":{"EUR":0.86311,"GBP":0.75557,"JPY":156.32,"CHF":0.80589,"AUD":1.5323,"NZD":1.7501,"CAD":1.4045},"2025-11-28":{"EUR":0.8646,"GBP":0.7567,"JPY":156.12,"CHF":0.80564,"AUD":1.5322,"NZD":1.7506,"CAD":1.4015},"2025-12-01":{"EUR":0.85866,"GBP":0.75374,"JPY":154.8,"CHF":0.80053,"AUD":1.5233,"NZD":1.7394,"CAD":1.3961},"2025-12-02":{"EUR":0.86103,"GBP":0.75736,"JPY":156.07,"CHF":0.80472,"AUD":1.526,"NZD":1.7474,"CAD":1.4004},"2025-12-03":{"EUR":0.85704,"GBP":0.75129,"JPY":155.37,"CHF":0.80014,"AUD":1.517,"NZD":1.7391,"CAD":1.3944},"2025-12-04":{"EUR":0.85719,"GBP":0.74961,"JPY":154.77,"CHF":0.80062,"AUD":1.5135,"NZD":1.7346,"CAD":1.3971},"2025-12-05":{"EUR":0.85874,"GBP":0.74942,"JPY":155.23,"CHF":0.80421,"AUD":1.5067,"NZD":1.731,"CAD":1.3937},"2025-12-08":{"EUR":0.858,"GBP":0.75041,"JPY":155.55,"CHF":0.80549,"AUD":1.5057,"NZD":1.7272,"CAD":1.3805},"2025-12-09":{"EUR":0.85933,"GBP":0.75062,"JPY":156.36,"CHF":0.80648,"AUD":1.5066,"NZD":1.7282,"CAD":1.3847},"2025-12-10":{"EUR":0.85955,"GBP":0.75133,"JPY":156.71,"CHF":0.80419,"AUD":1.5053,"NZD":1.7299,"CAD":1.3846},"2025-12-11":{"EUR":0.85368,"GBP":0.74705,"JPY":155.58,"CHF":0.79674,"AUD":1.5026,"NZD":1.7206,"CAD":1.3799},"2025-12-12":{"EUR":0.85244,"GBP":0.74734,"JPY":155.99,"CHF":0.79558,"AUD":1.4998,"NZD":1.721,"CAD":1.3758},"2025-12-15":{"EUR":0.85085,"GBP":0.74696,"JPY":155.13,"CHF":0.79597,"AUD":1.5034,"NZD":1.7264,"CAD":1.3757},"2025-12-16":{"EUR":0.84918,"GBP":0.74423,"JPY":154.61,"CHF":0.79407,"AUD":1.5062,"NZD":1.7278,"CAD":1.3762},"2025-12-17":{"EUR":0.8531,"GBP":0.74945,"JPY":155.59,"CHF":0.79611,"AUD":1.5103,"NZD":1.7313,"CAD":1.379},"2025-12-18":{"EUR":0.85332,"GBP":0.74631,"JPY":155.77,"CHF":0.79495,"AUD":1.5133,"NZD":1.7343,"CAD":1.379},"2025-12-19":{"EUR":0.85383,"GBP":0.74795,"JPY":157.23,"CHF":0.79559,"AUD":1.5146,"NZD":1.7427,"CAD":1.3794},"2025-12-22":{"EUR":0.85143,"GBP":0.74432,"JPY":157.32,"CHF":0.79319,"AUD":1.5042,"NZD":1.7269,"CAD":1.3766},"2025-12-23":{"EUR":0.84846,"GBP":0.74062,"JPY":156.02,"CHF":0.78797,"AUD":1.4939,"NZD":1.713,"CAD":1.3701},"2025-12-24":{"EUR":0.84839,"GBP":0.74056,"JPY":155.96,"CHF":0.78765,"AUD":1.4921,"NZD":1.7135,"CAD":1.3683},"2025-12-29":{"EUR":0.84991,"GBP":0.74163,"JPY":156.36,"CHF":0.78982,"AUD":1.4944,"NZD":1.7249,"CAD":1.3689},"2025-12-30":{"EUR":0.85056,"GBP":0.74101,"JPY":156.06,"CHF":0.79042,"AUD":1.4921,"NZD":1.7248,"CAD":1.3697},"2025-12-31":{"EUR":0.85106,"GBP":0.74264,"JPY":156.67,"CHF":0.79268,"AUD":1.4963,"NZD":1.7345,"CAD":1.3692},"2026-01-02":{"EUR":0.85317,"GBP":0.74388,"JPY":156.93,"CHF":0.79311,"AUD":1.4937,"NZD":1.7334,"CAD":1.3733},"2026-01-05":{"EUR":0.85734,"GBP":0.74383,"JPY":156.83,"CHF":0.79638,"AUD":1.4997,"NZD":1.7401,"CAD":1.3792},"2026-01-06":{"EUR":0.85419,"GBP":0.73998,"JPY":156.44,"CHF":0.79329,"AUD":1.4882,"NZD":1.7282,"CAD":1.3777},"2026-01-07":{"EUR":0.85587,"GBP":0.74153,"JPY":156.55,"CHF":0.7963,"AUD":1.4864,"NZD":1.7289,"CAD":1.3809},"2026-01-08":{"EUR":0.85653,"GBP":0.74407,"JPY":156.72,"CHF":0.7976,"AUD":1.4932,"NZD":1.7399,"CAD":1.3861},"2026-01-09":{"EUR":0.85896,"GBP":0.74532,"JPY":157.64,"CHF":0.80003,"AUD":1.4981,"NZD":1.747,"CAD":1.3883},"2026-01-12":{"EUR":0.85529,"GBP":0.74187,"JPY":157.73,"CHF":0.79653,"AUD":1.489,"NZD":1.7337,"CAD":1.3872},"2026-01-13":{"EUR":0.85807,"GBP":0.74309,"JPY":158.85,"CHF":0.79895,"AUD":1.4925,"NZD":1.736,"CAD":1.3877},"2026-01-14":{"EUR":0.8583,"GBP":0.74397,"JPY":158.63,"CHF":0.80105,"AUD":1.4977,"NZD":1.7426,"CAD":1.3878},"2026-01-15":{"EUR":0.86029,"GBP":0.74621,"JPY":158.56,"CHF":0.80127,"AUD":1.4954,"NZD":1.7417,"CAD":1.3904},"2026-01-16":{"EUR":0.86081,"GBP":0.74632,"JPY":158.1,"CHF":0.80167,"AUD":1.493,"NZD":1.737,"CAD":1.3889},"2026-01-19":{"EUR":0.85977,"GBP":0.74551,"JPY":157.93,"CHF":0.79804,"AUD":1.491,"NZD":1.728,"CAD":1.3884},"2026-01-20":{"EUR":0.85266,"GBP":0.74369,"JPY":157.9,"CHF":0.79025,"AUD":1.4853,"NZD":1.7137,"CAD":1.3826},"2026-01-21":{"EUR":0.85186,"GBP":0.74487,"JPY":157.79,"CHF":0.78951,"AUD":1.4771,"NZD":1.7053,"CAD":1.3793},"2026-01-22":{"EUR":0.85426,"GBP":0.74509,"JPY":158.79,"CHF":0.79301,"AUD":1.4691,"NZD":1.7008,"CAD":1.3814},"2026-01-23":{"EUR":0.85164,"GBP":0.73931,"JPY":158.16,"CHF":0.79007,"AUD":1.4567,"NZD":1.6909,"CAD":1.3763},"2026-01-26":{"EUR":0.84488,"GBP":0.73293,"JPY":154.21,"CHF":0.77923,"AUD":1.4475,"NZD":1.6794,"CAD":1.3712},"2026-01-27":{"EUR":0.83829,"GBP":0.72789,"JPY":153.34,"CHF":0.77098,"AUD":1.4391,"NZD":1.6688,"CAD":1.3678},"2026-01-28":{"EUR":0.83514,"GBP":0.72532,"JPY":152.63,"CHF":0.76733,"AUD":1.4287,"NZD":1.6585,"CAD":1.3564},"2026-01-29":{"EUR":0.83556,"GBP":0.72376,"JPY":153.31,"CHF":0.76721,"AUD":1.415,"NZD":1.6451,"CAD":1.3524},"2026-01-30":{"EUR":0.839,"GBP":0.72674,"JPY":154.03,"CHF":0.76827,"AUD":1.4264,"NZD":1.6495,"CAD":1.3525},"2026-02-02":{"EUR":0.84459,"GBP":0.73125,"JPY":155.06,"CHF":0.77694,"AUD":1.4394,"NZD":1.6643,"CAD":1.3646},"2026-02-03":{"EUR":0.84739,"GBP":0.7307,"JPY":155.85,"CHF":0.77731,"AUD":1.4262,"NZD":1.6551,"CAD":1.3656},"2026-02-04":{"EUR":0.84602,"GBP":0.72893,"JPY":156.64,"CHF":0.77563,"AUD":1.4225,"NZD":1.6584,"CAD":1.3653},"2026-02-05":{"EUR":0.8476,"GBP":0.73665,"JPY":156.9,"CHF":0.77649,"AUD":1.4343,"NZD":1.6677,"CAD":1.3684},"2026-02-06":{"EUR":0.84789,"GBP":0.73588,"JPY":157.09,"CHF":0.77794,"AUD":1.4312,"NZD":1.6681,"CAD":1.3666},"2026-02-09":{"EUR":0.84133,"GBP":0.73204,"JPY":156.19,"CHF":0.76981,"AUD":1.417,"NZD":1.6562,"CAD":1.3608},"2026-02-10":{"EUR":0.84076,"GBP":0.73104,"JPY":155.13,"CHF":0.76703,"AUD":1.415,"NZD":1.6552,"CAD":1.3571},"2026-02-11":{"EUR":0.84034,"GBP":0.73101,"JPY":153.61,"CHF":0.76773,"AUD":1.4065,"NZD":1.6502,"CAD":1.3561},"2026-02-12":{"EUR":0.84218,"GBP":0.73362,"JPY":153.71,"CHF":0.76992,"AUD":1.4046,"NZD":1.6497,"CAD":1.3583},"2026-02-13":{"EUR":0.84303,"GBP":0.73478,"JPY":153.29,"CHF":0.76893,"AUD":1.4183,"NZD":1.6602,"CAD":1.3624},"2026-02-16":{"EUR":0.84353,"GBP":0.73302,"JPY":153.34,"CHF":0.77005,"AUD":1.4113,"NZD":1.6553,"CAD":1.3627},"2026-02-17":{"EUR":0.84559,"GBP":0.73846,"JPY":153.1,"CHF":0.77084,"AUD":1.4186,"NZD":1.6593,"CAD":1.3656},"2026-02-18":{"EUR":0.84424,"GBP":0.73651,"JPY":153.64,"CHF":0.77028,"AUD":1.4139,"NZD":1.6657,"CAD":1.3646},"2026-02-19":{"EUR":0.85085,"GBP":0.74347,"JPY":154.9,"CHF":0.77589,"AUD":1.4207,"NZD":1.6786,"CAD":1.3705},"2026-02-20":{"EUR":0.84983,"GBP":0.74174,"JPY":155.21,"CHF":0.77607,"AUD":1.419,"NZD":1.6795,"CAD":1.3693},"2026-02-23":{"EUR":0.84861,"GBP":0.74117,"JPY":154.82,"CHF":0.77605,"AUD":1.4145,"NZD":1.676,"CAD":1.369},"2026-02-24":{"EUR":0.84911,"GBP":0.74136,"JPY":155.84,"CHF":0.77439,"AUD":1.4195,"NZD":1.6798,"CAD":1.3711},"2026-02-25":{"EUR":0.84861,"GBP":0.73948,"JPY":156.74,"CHF":0.77478,"AUD":1.4101,"NZD":1.674,"CAD":1.3691},"2026-02-26":{"EUR":0.84645,"GBP":0.73802,"JPY":156.06,"CHF":0.77366,"AUD":1.4044,"NZD":1.6693,"CAD":1.3674},"2026-02-27":{"EUR":0.8471,"GBP":0.74231,"JPY":155.98,"CHF":0.7712,"AUD":1.4072,"NZD":1.6714,"CAD":1.3671},"2026-03-02":{"EUR":0.85485,"GBP":0.74705,"JPY":157.45,"CHF":0.77936,"AUD":1.4173,"NZD":1.6848,"CAD":1.367},"2026-03-03":{"EUR":0.86162,"GBP":0.75108,"JPY":157.66,"CHF":0.78468,"AUD":1.4246,"NZD":1.6964,"CAD":1.3685},"2026-03-04":{"EUR":0.85844,"GBP":0.74727,"JPY":157.11,"CHF":0.77964,"AUD":1.4167,"NZD":1.6889,"CAD":1.3658},"2026-03-05":{"EUR":0.86073,"GBP":0.74841,"JPY":157.54,"CHF":0.78017,"AUD":1.4193,"NZD":1.689,"CAD":1.3624},"2026-03-06":{"EUR":0.86498,"GBP":0.74987,"JPY":157.92,"CHF":0.78237,"AUD":1.4273,"NZD":1.7029,"CAD":1.3651},"2026-03-09":{"EUR":0.86543,"GBP":0.74885,"JPY":158.5,"CHF":0.77958,"AUD":1.4249,"NZD":1.693,"CAD":1.357},"2026-03-10":{"EUR":0.85903,"GBP":0.74345,"JPY":157.78,"CHF":0.77545,"AUD":1.4049,"NZD":1.6834,"CAD":1.3553},"2026-03-11":{"EUR":0.86348,"GBP":0.74573,"JPY":158.56,"CHF":0.77981,"AUD":1.3984,"NZD":1.6899,"CAD":1.3593},"2026-03-12":{"EUR":0.86603,"GBP":0.74689,"JPY":158.86,"CHF":0.78185,"AUD":1.4021,"NZD":1.6964,"CAD":1.3602},"2026-03-13":{"EUR":0.87138,"GBP":0.75377,"JPY":159.33,"CHF":0.78721,"AUD":1.4197,"NZD":1.7158,"CAD":1.3703},"2026-03-16":{"EUR":0.87123,"GBP":0.75281,"JPY":159.14,"CHF":0.78768,"AUD":1.4177,"NZD":1.7117,"CAD":1.3681},"2026-03-17":{"EUR":0.86723,"GBP":0.74954,"JPY":158.95,"CHF":0.7864,"AUD":1.4073,"NZD":1.7078,"CAD":1.3706},"2026-03-18":{"EUR":0.86957,"GBP":0.75124,"JPY":159.56,"CHF":0.78896,"AUD":1.4178,"NZD":1.7185,"CAD":1.3717},"2026-03-19":{"EUR":0.8704,"GBP":0.75192,"JPY":158.81,"CHF":0.79389,"AUD":1.4277,"NZD":1.7234,"CAD":1.3726},"2026-03-20":{"EUR":0.86543,"GBP":0.74806,"JPY":158.77,"CHF":0.78719,"AUD":1.4151,"NZD":1.7069,"CAD":1.3716},"2026-03-23":{"EUR":0.86237,"GBP":0.74526,"JPY":158.55,"CHF":0.78682,"AUD":1.4245,"NZD":1.7106,"CAD":1.3708},"2026-03-24":{"EUR":0.86415,"GBP":0.74785,"JPY":158.93,"CHF":0.79027,"AUD":1.439,"NZD":1.7192,"CAD":1.3749},"2026-03-25":{"EUR":0.86266,"GBP":0.7467,"JPY":158.96,"CHF":0.7896,"AUD":1.4361,"NZD":1.7185,"CAD":1.3783},"2026-03-26":{"EUR":0.86663,"GBP":0.74976,"JPY":159.62,"CHF":0.79305,"AUD":1.4467,"NZD":1.7296,"CAD":1.3835},"2026-03-27":{"EUR":0.86828,"GBP":0.75297,"JPY":159.9,"CHF":0.79691,"AUD":1.4527,"NZD":1.7382,"CAD":1.387},"2026-03-30":{"EUR":0.87078,"GBP":0.75586,"JPY":159.46,"CHF":0.79998,"AUD":1.4577,"NZD":1.7475,"CAD":1.3921},"2026-03-31":{"EUR":0.86972,"GBP":0.7552,"JPY":159.5,"CHF":0.79962,"AUD":1.4518,"NZD":1.7447,"CAD":1.3935},"2026-04-01":{"EUR":0.8617,"GBP":0.75065,"JPY":158.32,"CHF":0.79199,"AUD":1.4381,"NZD":1.7322,"CAD":1.3894},"2026-04-02":{"EUR":0.86768,"GBP":0.75708,"JPY":159.6,"CHF":0.79939,"AUD":1.4552,"NZD":1.7519,"CAD":1.3909},"2026-04-07":{"EUR":0.86528,"GBP":0.75502,"JPY":159.84,"CHF":0.79969,"AUD":1.442,"NZD":1.7537,"CAD":1.3912},"2026-04-08":{"EUR":0.85426,"GBP":0.74229,"JPY":158.15,"CHF":0.78789,"AUD":1.4171,"NZD":1.7132,"CAD":1.386},"2026-04-09":{"EUR":0.8558,"GBP":0.745,"JPY":158.92,"CHF":0.79076,"AUD":1.42,"NZD":1.7132,"CAD":1.3843},"2026-04-10":{"EUR":0.8539,"GBP":0.74379,"JPY":159.19,"CHF":0.78909,"AUD":1.4141,"NZD":1.7107,"CAD":1.3822},"2026-04-13":{"EUR":0.85587,"GBP":0.7451,"JPY":159.83,"CHF":0.791,"AUD":1.4216,"NZD":1.7187,"CAD":1.3845},"2026-04-14":{"EUR":0.84796,"GBP":0.73699,"JPY":158.85,"CHF":0.78097,"AUD":1.4041,"NZD":1.6952,"CAD":1.3758},"2026-04-15":{"EUR":0.8489,"GBP":0.73799,"JPY":159.09,"CHF":0.78268,"AUD":1.4013,"NZD":1.6959,"CAD":1.3782},"2026-04-16":{"EUR":0.84875,"GBP":0.73836,"JPY":158.98,"CHF":0.7834,"AUD":1.3941,"NZD":1.6963,"CAD":1.3728},"2026-04-17":{"EUR":0.84767,"GBP":0.7389,"JPY":159.13,"CHF":0.78249,"AUD":1.3934,"NZD":1.6981,"CAD":1.3672},"2026-04-20":{"EUR":0.85034,"GBP":0.74018,"JPY":158.91,"CHF":0.78138,"AUD":1.3973,"NZD":1.7009,"CAD":1.3695},"2026-04-21":{"EUR":0.84983,"GBP":0.73965,"JPY":159.04,"CHF":0.77947,"AUD":1.3957,"NZD":1.6918,"CAD":1.3657},"2026-04-22":{"EUR":0.8523,"GBP":0.74067,"JPY":159.22,"CHF":0.78198,"AUD":1.3981,"NZD":1.6932,"CAD":1.3666},"2026-04-23":{"EUR":0.85514,"GBP":0.74034,"JPY":159.48,"CHF":0.78476,"AUD":1.3979,"NZD":1.6984,"CAD":1.367},"2026-04-24":{"EUR":0.85383,"GBP":0.74115,"JPY":159.42,"CHF":0.78543,"AUD":1.3997,"NZD":1.7024,"CAD":1.3681},"2026-04-27":{"EUR":0.85114,"GBP":0.73691,"JPY":159.21,"CHF":0.7839,"AUD":1.3905,"NZD":1.6896,"CAD":1.36},"2026-04-28":{"EUR":0.85616,"GBP":0.74242,"JPY":159.74,"CHF":0.79092,"AUD":1.3979,"NZD":1.7042,"CAD":1.3676},"2026-04-29":{"EUR":0.85426,"GBP":0.74016,"JPY":159.79,"CHF":0.789,"AUD":1.3962,"NZD":1.7069,"CAD":1.3674},"2026-04-30":{"EUR":0.85455,"GBP":0.74026,"JPY":156.56,"CHF":0.78534,"AUD":1.399,"NZD":1.7054,"CAD":1.3668},"2026-05-04":{"EUR":0.8547,"GBP":0.7381,"JPY":157.12,"CHF":0.78402,"AUD":1.3922,"NZD":1.6986,"CAD":1.3615},"2026-05-05":{"EUR":0.85572,"GBP":0.73886,"JPY":157.81,"CHF":0.78427,"AUD":1.3947,"NZD":1.7008,"CAD":1.3615},"2026-05-06":{"EUR":0.8502,"GBP":0.73431,"JPY":156.21,"CHF":0.7792,"AUD":1.3805,"NZD":1.676,"CAD":1.3602},"2026-05-07":{"EUR":0.84962,"GBP":0.73415,"JPY":156.39,"CHF":0.77799,"AUD":1.378,"NZD":1.6726,"CAD":1.3628},"2026-05-08":{"EUR":0.85027,"GBP":0.73472,"JPY":156.76,"CHF":0.77851,"AUD":1.3825,"NZD":1.678,"CAD":1.3658},"2026-05-11":{"EUR":0.84998,"GBP":0.73513,"JPY":157.14,"CHF":0.77884,"AUD":1.3811,"NZD":1.6817,"CAD":1.3667},"2026-05-12":{"EUR":0.85193,"GBP":0.7395,"JPY":157.59,"CHF":0.78139,"AUD":1.3846,"NZD":1.682,"CAD":1.3706},"2026-05-13":{"EUR":0.85361,"GBP":0.74019,"JPY":157.77,"CHF":0.78148,"AUD":1.3793,"NZD":1.6858,"CAD":1.3691},"2026-05-14":{"EUR":0.85455,"GBP":0.7402,"JPY":157.95,"CHF":0.78192,"AUD":1.3811,"NZD":1.6864,"CAD":1.3724},"2026-05-15":{"EUR":0.85999,"GBP":0.74862,"JPY":158.55,"CHF":0.78638,"AUD":1.3988,"NZD":1.7121,"CAD":1.3756},"2026-05-18":{"EUR":0.85852,"GBP":0.74708,"JPY":158.77,"CHF":0.78503,"AUD":1.3956,"NZD":1.7048,"CAD":1.3741},"2026-05-19":{"EUR":0.86059,"GBP":0.74588,"JPY":159.11,"CHF":0.78744,"AUD":1.4051,"NZD":1.7108,"CAD":1.3756},"2026-05-20":{"EUR":0.86207,"GBP":0.74616,"JPY":159.03,"CHF":0.79009,"AUD":1.4027,"NZD":1.7104,"CAD":1.3758},"2026-05-21":{"EUR":0.86214,"GBP":0.74518,"JPY":159.14,"CHF":0.78843,"AUD":1.403,"NZD":1.7072,"CAD":1.377},"2026-05-22":{"EUR":0.86244,"GBP":0.7453,"JPY":159.15,"CHF":0.78646,"AUD":1.4043,"NZD":1.7091,"CAD":1.3801},"2026-05-25":{"EUR":0.85889,"GBP":0.74083,"JPY":158.93,"CHF":0.7815,"AUD":1.3948,"NZD":1.7023,"CAD":1.3813},"2026-05-26":{"EUR":0.85955,"GBP":0.74244,"JPY":159.21,"CHF":0.78528,"AUD":1.3956,"NZD":1.7116,"CAD":1.3812},"2026-05-27":{"EUR":0.85933,"GBP":0.74433,"JPY":159.42,"CHF":0.78654,"AUD":1.4025,"NZD":1.6992,"CAD":1.3834},"2026-05-28":{"EUR":0.86081,"GBP":0.74602,"JPY":159.46,"CHF":0.7891,"AUD":1.4047,"NZD":1.6969,"CAD":1.3854},"2026-05-29":{"EUR":0.85881,"GBP":0.74479,"JPY":159.27,"CHF":0.78246,"AUD":1.3945,"NZD":1.6739,"CAD":1.3805},"2026-06-01":{"EUR":0.85866,"GBP":0.74268,"JPY":159.49,"CHF":0.78379,"AUD":1.394,"NZD":1.6794,"CAD":1.383},"2026-06-02":{"EUR":0.85844,"GBP":0.74225,"JPY":159.75,"CHF":0.78539,"AUD":1.3925,"NZD":1.6841,"CAD":1.3837},"2026-06-03":{"EUR":0.86103,"GBP":0.74367,"JPY":159.86,"CHF":0.78931,"AUD":1.3964,"NZD":1.6958,"CAD":1.3857},"2026-06-04":{"EUR":0.85911,"GBP":0.74304,"JPY":159.8,"CHF":0.78763,"AUD":1.4001,"NZD":1.7003,"CAD":1.3897},"2026-06-05":{"EUR":0.85911,"GBP":0.74255,"JPY":159.86,"CHF":0.78823,"AUD":1.4004,"NZD":1.7015,"CAD":1.3882},"2026-06-08":{"EUR":0.86655,"GBP":0.74835,"JPY":159.97,"CHF":0.7961,"AUD":1.4134,"NZD":1.7151,"CAD":1.3937},"2026-06-09":{"EUR":0.86408,"GBP":0.74605,"JPY":160.16,"CHF":0.79547,"AUD":1.4163,"NZD":1.7117,"CAD":1.3921},"2026-06-10":{"EUR":0.86663,"GBP":0.74727,"JPY":160.49,"CHF":0.7992,"AUD":1.4278,"NZD":1.7228,"CAD":1.3929},"2026-06-11":{"EUR":0.86678,"GBP":0.74829,"JPY":160.54,"CHF":0.79925,"AUD":1.4291,"NZD":1.7284,"CAD":1.3979},"2026-06-12":{"EUR":0.86453,"GBP":0.74613,"JPY":160.2,"CHF":0.79684,"AUD":1.4215,"NZD":1.717,"CAD":1.3988},"2026-06-15":{"EUR":0.86155,"GBP":0.74509,"JPY":160.19,"CHF":0.79366,"AUD":1.415,"NZD":1.7129,"CAD":1.3981},"2026-06-16":{"EUR":0.86252,"GBP":0.74583,"JPY":160.38,"CHF":0.79558,"AUD":1.4155,"NZD":1.7169,"CAD":1.4014},"2026-06-17":{"EUR":0.86274,"GBP":0.74595,"JPY":160.31,"CHF":0.79312,"AUD":1.4164,"NZD":1.7213,"CAD":1.4012},"2026-06-18":{"EUR":0.87252,"GBP":0.75594,"JPY":160.93,"CHF":0.80429,"AUD":1.4276,"NZD":1.7354,"CAD":1.4125},"2026-06-19":{"EUR":0.87207,"GBP":0.75567,"JPY":161.23,"CHF":0.80649,"AUD":1.4257,"NZD":1.7413,"CAD":1.4152},"2026-06-22":{"EUR":0.87291,"GBP":0.75478,"JPY":161.78,"CHF":0.80805,"AUD":1.4269,"NZD":1.745,"CAD":1.4161},"2026-06-23":{"EUR":0.87781,"GBP":0.75667,"JPY":161.53,"CHF":0.80978,"AUD":1.4416,"NZD":1.7613,"CAD":1.4187},"2026-06-24":{"EUR":0.88183,"GBP":0.75983,"JPY":161.68,"CHF":0.8127,"AUD":1.4494,"NZD":1.7721,"CAD":1.4233},"2026-06-25":{"EUR":0.88168,"GBP":0.75986,"JPY":161.85,"CHF":0.81317,"AUD":1.4507,"NZD":1.7735,"CAD":1.424},"2026-06-26":{"EUR":0.87712,"GBP":0.75654,"JPY":161.65,"CHF":0.80853,"AUD":1.4488,"NZD":1.7701,"CAD":1.4182},"2026-06-29":{"EUR":0.87673,"GBP":0.75587,"JPY":161.86,"CHF":0.80852,"AUD":1.4493,"NZD":1.7688,"CAD":1.4204},"2026-06-30":{"EUR":0.87765,"GBP":0.75635,"JPY":162.44,"CHF":0.80955,"AUD":1.452,"NZD":1.7672,"CAD":1.4236},"2026-07-01":{"EUR":0.8785,"GBP":0.75528,"JPY":162.71,"CHF":0.81121,"AUD":1.4511,"NZD":1.7631,"CAD":1.4224},"2026-07-02":{"EUR":0.87727,"GBP":0.75151,"JPY":161.58,"CHF":0.80709,"AUD":1.4515,"NZD":1.7634,"CAD":1.4214},"2026-07-03":{"EUR":0.87352,"GBP":0.74878,"JPY":161.15,"CHF":0.80276,"AUD":1.4413,"NZD":1.7513,"CAD":1.4202},"2026-07-06":{"EUR":0.87604,"GBP":0.74935,"JPY":162.34,"CHF":0.80604,"AUD":1.4421,"NZD":1.759,"CAD":1.4223},"2026-07-07":{"EUR":0.87466,"GBP":0.74706,"JPY":161.89,"CHF":0.80626,"AUD":1.4393,"NZD":1.757,"CAD":1.4218},"2026-07-08":{"EUR":0.87689,"GBP":0.74917,"JPY":162.49,"CHF":0.80866,"AUD":1.4443,"NZD":1.7554,"CAD":1.4184},"2026-07-09":{"EUR":0.87451,"GBP":0.74651,"JPY":162.41,"CHF":0.80691,"AUD":1.441,"NZD":1.7417,"CAD":1.4169},"2026-07-10":{"EUR":0.87489,"GBP":0.74501,"JPY":161.87,"CHF":0.80691,"AUD":1.4389,"NZD":1.733,"CAD":1.4153},"2026-07-13":{"EUR":0.87535,"GBP":0.74694,"JPY":162.14,"CHF":0.80996,"AUD":1.4403,"NZD":1.7306,"CAD":1.4135},"2026-07-14":{"EUR":0.87681,"GBP":0.74717,"JPY":162.22,"CHF":0.81166,"AUD":1.4404,"NZD":1.724,"CAD":1.4112},"2026-07-15":{"EUR":0.87673,"GBP":0.74604,"JPY":162.39,"CHF":0.8115,"AUD":1.4321,"NZD":1.7191,"CAD":1.4074},"2026-07-16":{"EUR":0.87207,"GBP":0.74015,"JPY":162.2,"CHF":0.80666,"AUD":1.4269,"NZD":1.7078,"CAD":1.4025},"2026-07-17":{"EUR":0.87451,"GBP":0.74419,"JPY":162.35,"CHF":0.807,"AUD":1.4337,"NZD":1.7148,"CAD":1.4023},"2026-07-20":{"EUR":0.8752,"GBP":0.74294,"JPY":162.38,"CHF":0.80833,"AUD":1.4272,"NZD":1.7084,"CAD":1.4031},"2026-07-21":{"EUR":0.87581,"GBP":0.74623,"JPY":162.74,"CHF":0.81091,"AUD":1.4255,"NZD":1.7107,"CAD":1.4073},"2026-07-22":{"EUR":0.87658,"GBP":0.74807,"JPY":163.07,"CHF":0.81241,"AUD":1.4299,"NZD":1.7188,"CAD":1.4087},"2026-07-23":{"EUR":0.87781,"GBP":0.74893,"JPY":163.47,"CHF":0.81592,"AUD":1.43,"NZD":1.7283,"CAD":1.4075},"2026-07-24":{"EUR":0.87897,"GBP":0.75053,"JPY":163.82,"CHF":0.81761,"AUD":1.431,"NZD":1.7277,"CAD":1.4086},"2026-07-27":{"EUR":0.87804,"GBP":0.75094,"JPY":163.64,"CHF":0.81517,"AUD":1.4287,"NZD":1.7265,"CAD":1.4105},"2026-07-28":{"EUR":0.87974,"GBP":0.75262,"JPY":163.91,"CHF":0.81983,"AUD":1.435,"NZD":1.7325,"CAD":1.4108},"2026-07-29":{"EUR":0.87873,"GBP":0.7525,"JPY":163.68,"CHF":0.82004,"AUD":1.4409,"NZD":1.7319,"CAD":1.4105},"2026-07-30":{"EUR":0.87138,"GBP":0.74691,"JPY":162.94,"CHF":0.81248,"AUD":1.4325,"NZD":1.7119,"CAD":1.4046},"2026-07-31":{"EUR":0.8707,"GBP":0.74508,"JPY":160.24,"CHF":0.8101,"AUD":1.4249,"NZD":1.7056,"CAD":1.4041},"2026-08-03":{"EUR":0.86693,"GBP":0.74238,"JPY":156.68,"CHF":0.80798,"AUD":1.4272,"NZD":1.7023,"CAD":1.4028},"2026-08-04":{"EUR":0.86843,"GBP":0.74372,"JPY":157.41,"CHF":0.80929,"AUD":1.4222,"NZD":1.6993,"CAD":1.4061},"2026-08-05":{"EUR":0.8655,"GBP":0.74191,"JPY":157.59,"CHF":0.80881,"AUD":1.4181,"NZD":1.7033,"CAD":1.4047},"2026-08-06":{"EUR":0.8664,"GBP":0.74255,"JPY":157.83,"CHF":0.80974,"AUD":1.42,"NZD":1.6998,"CAD":1.3998},"2026-08-07":{"EUR":0.86693,"GBP":0.74352,"JPY":158.34,"CHF":0.81032,"AUD":1.4204,"NZD":1.7032,"CAD":1.401},"2026-08-10":{"EUR":0.86543,"GBP":0.7405,"JPY":158.64,"CHF":0.80831,"AUD":1.4158,"NZD":1.6974,"CAD":1.394},"2026-08-11":{"EUR":0.86655,"GBP":0.74075,"JPY":159.2,"CHF":0.81031,"AUD":1.4156,"NZD":1.7007,"CAD":1.3938},"2026-08-12":{"EUR":0.86618,"GBP":0.73935,"JPY":159.09,"CHF":0.81126,"AUD":1.4142,"NZD":1.7042,"CAD":1.3926},"2026-08-13":{"EUR":0.867,"GBP":0.7412,"JPY":159.33,"CHF":0.81264,"AUD":1.4181,"NZD":1.711,"CAD":1.3949},"2026-08-14":{"EUR":0.86453,"GBP":0.73874,"JPY":159.01,"CHF":0.81179,"AUD":1.412,"NZD":1.6981,"CAD":1.3875},"2026-08-17":{"EUR":0.86259,"GBP":0.73751,"JPY":159.23,"CHF":0.80989,"AUD":1.4035,"NZD":1.6901,"CAD":1.3859},"2026-08-18":{"EUR":0.86386,"GBP":0.73933,"JPY":159.7,"CHF":0.81254,"AUD":1.4062,"NZD":1.6994,"CAD":1.3874},"2026-08-19":{"EUR":0.8617,"GBP":0.73768,"JPY":159.09,"CHF":0.81017,"AUD":1.4133,"NZD":1.7008,"CAD":1.3872},"2026-08-20":{"EUR":0.85609,"GBP":0.73388,"JPY":158.76,"CHF":0.79899,"AUD":1.4072,"NZD":1.6828,"CAD":1.377},"2026-08-21":{"EUR":0.85477,"GBP":0.73228,"JPY":158.7,"CHF":0.79947,"AUD":1.3951,"NZD":1.6703,"CAD":1.374},"2026-08-24":{"EUR":0.85734,"GBP":0.73345,"JPY":159.12,"CHF":0.80264,"AUD":1.3963,"NZD":1.6776,"CAD":1.3849},"2026-08-25":{"EUR":0.85749,"GBP":0.73358,"JPY":159.24,"CHF":0.80269,"AUD":1.398,"NZD":1.6761,"CAD":1.386},"2026-08-26":{"EUR":0.85697,"GBP":0.73368,"JPY":159.07,"CHF":0.80384,"AUD":1.3918,"NZD":1.6781,"CAD":1.3862},"2026-08-27":{"EUR":0.85874,"GBP":0.73628,"JPY":159.39,"CHF":0.80515,"AUD":1.3908,"NZD":1.6802,"CAD":1.3869},"2026-08-28":{"EUR":0.85889,"GBP":0.73624,"JPY":159.68,"CHF":0.80426,"AUD":1.3899,"NZD":1.6821,"CAD":1.3854},"2026-08-31":{"EUR":0.86237,"GBP":0.7386,"JPY":159.73,"CHF":0.80855,"AUD":1.3963,"NZD":1.6902,"CAD":1.3886},"2026-09-01":{"EUR":0.86281,"GBP":0.73904,"JPY":160.16,"CHF":0.81053,"AUD":1.4003,"NZD":1.6975,"CAD":1.3888},"2026-09-02":{"EUR":0.86371,"GBP":0.74167,"JPY":159.6,"CHF":0.81396,"AUD":1.3991,"NZD":1.716,"CAD":1.3925},"2026-09-03":{"EUR":0.86096,"GBP":0.7409,"JPY":156.01,"CHF":0.80844,"AUD":1.3902,"NZD":1.703,"CAD":1.3792},"2026-09-04":{"EUR":0.86044,"GBP":0.7391,"JPY":156.25,"CHF":0.80924,"AUD":1.3882,"NZD":1.6998,"CAD":1.38},"2026-09-07":{"EUR":0.86044,"GBP":0.73906,"JPY":154.75,"CHF":0.80924,"AUD":1.3861,"NZD":1.7019,"CAD":1.382},"2026-09-08":{"EUR":0.86103,"GBP":0.73825,"JPY":154.3,"CHF":0.81152,"AUD":1.3861,"NZD":1.7115,"CAD":1.3805},"2026-09-09":{"EUR":0.85822,"GBP":0.7372,"JPY":153.27,"CHF":0.80707,"AUD":1.3841,"NZD":1.7081,"CAD":1.3768},"2026-09-10":{"EUR":0.86088,"GBP":0.73963,"JPY":154.18,"CHF":0.81198,"AUD":1.3918,"NZD":1.7166,"CAD":1.3816},"2026-09-11":{"EUR":0.86266,"GBP":0.7403,"JPY":154.04,"CHF":0.8153,"AUD":1.3942,"NZD":1.7179,"CAD":1.3858},"2026-09-14":{"EUR":0.86573,"GBP":0.74104,"JPY":154.55,"CHF":0.81647,"AUD":1.4026,"NZD":1.7325,"CAD":1.3887},"2026-09-15":{"EUR":0.86663,"GBP":0.74166,"JPY":155,"CHF":0.81818,"AUD":1.4034,"NZD":1.7369,"CAD":1.392},"2026-09-16":{"EUR":0.86678,"GBP":0.74317,"JPY":155.05,"CHF":0.81902,"AUD":1.4021,"NZD":1.7354,"CAD":1.3939},"2026-09-17":{"EUR":0.871,"GBP":0.74758,"JPY":155.69,"CHF":0.82449,"AUD":1.4057,"NZD":1.7414,"CAD":1.3995},"2026-09-18":{"EUR":0.8726,"GBP":0.74939,"JPY":157.89,"CHF":0.82565,"AUD":1.4045,"NZD":1.7511,"CAD":1.401},"2026-09-21":{"EUR":0.87032,"GBP":0.74656,"JPY":157.27,"CHF":0.82141,"AUD":1.401,"NZD":1.7437,"CAD":1.4004},"2026-09-22":{"EUR":0.87237,"GBP":0.74832,"JPY":157.18,"CHF":0.81942,"AUD":1.4064,"NZD":1.745,"CAD":1.4044},"2026-09-23":{"EUR":0.87635,"GBP":0.75322,"JPY":157.92,"CHF":0.82289,"AUD":1.415,"NZD":1.757,"CAD":1.4089},"2026-09-24":{"EUR":0.87974,"GBP":0.75645,"JPY":158.85,"CHF":0.82775,"AUD":1.4232,"NZD":1.7638,"CAD":1.4117},"2026-09-25":{"EUR":0.87696,"GBP":0.75458,"JPY":157.59,"CHF":0.82829,"AUD":1.4224,"NZD":1.7634,"CAD":1.4143},"2026-09-28":{"EUR":0.87889,"GBP":0.75396,"JPY":156.88,"CHF":0.83178,"AUD":1.4237,"NZD":1.764,"CAD":1.4166},"2026-09-29":{"EUR":0.88067,"GBP":0.75489,"JPY":157.12,"CHF":0.8332,"AUD":1.4277,"NZD":1.768,"CAD":1.418},"2026-09-30":{"EUR":0.88067,"GBP":0.75265,"JPY":157,"CHF":0.8347,"AUD":1.4352,"NZD":1.7715,"CAD":1.4183},"2026-10-01":{"EUR":0.88511,"GBP":0.75565,"JPY":157.98,"CHF":0.83528,"AUD":1.4388,"NZD":1.7809,"CAD":1.4246},"2026-10-02":{"EUR":0.89087,"GBP":0.75753,"JPY":157.67,"CHF":0.82664,"AUD":1.4411,"NZD":1.7819,"CAD":1.424},"2026-10-05":{"EUR":0.89254,"GBP":0.75616,"JPY":158.23,"CHF":0.83104,"AUD":1.4367,"NZD":1.7885,"CAD":1.4253},"2026-10-06":{"EUR":0.88739,"GBP":0.75322,"JPY":158.09,"CHF":0.83051,"AUD":1.4322,"NZD":1.7802,"CAD":1.425},"2026-10-07":{"EUR":0.89469,"GBP":0.75731,"JPY":158.23,"CHF":0.83287,"AUD":1.4386,"NZD":1.7873,"CAD":1.4253},"2026-10-08":{"EUR":0.89397,"GBP":0.75718,"JPY":158.28,"CHF":0.83372,"AUD":1.4402,"NZD":1.7892,"CAD":1.4262},"2026-10-09":{"EUR":0.89238,"GBP":0.75641,"JPY":158.25,"CHF":0.83107,"AUD":1.4324,"NZD":1.7813,"CAD":1.4226},"2026-10-12":{"EUR":0.89437,"GBP":0.75555,"JPY":158.6,"CHF":0.83284,"AUD":1.4339,"NZD":1.7859,"CAD":1.4262},"2026-10-13":{"EUR":0.89381,"GBP":0.75492,"JPY":158.12,"CHF":0.83232,"AUD":1.4331,"NZD":1.7815,"CAD":1.4241},"2026-10-14":{"EUR":0.89326,"GBP":0.75377,"JPY":158.45,"CHF":0.83341,"AUD":1.4266,"NZD":1.7812,"CAD":1.4219},"2026-10-15":{"EUR":0.89222,"GBP":0.75491,"JPY":157.98,"CHF":0.83021,"AUD":1.447,"NZD":1.7855,"CAD":1.4207},"2026-10-16":{"EUR":0.88865,"GBP":0.74989,"JPY":158.02,"CHF":0.82396,"AUD":1.437,"NZD":1.7656,"CAD":1.4161},"2026-10-19":{"EUR":0.89087,"GBP":0.75016,"JPY":158.24,"CHF":0.82503,"AUD":1.4314,"NZD":1.7632,"CAD":1.4074},"2026-10-20":{"EUR":0.89166,"GBP":0.74925,"JPY":158.13,"CHF":0.82363,"AUD":1.4317,"NZD":1.7609,"CAD":1.4051},"2026-10-21":{"EUR":0.89015,"GBP":0.74617,"JPY":157.88,"CHF":0.82393,"AUD":1.4217,"NZD":1.7567,"CAD":1.4046},"2026-10-22":{"EUR":0.89246,"GBP":0.74761,"JPY":157.05,"CHF":0.82204,"AUD":1.4261,"NZD":1.7603,"CAD":1.4034},"2026-10-23":{"EUR":0.89342,"GBP":0.74804,"JPY":156.8,"CHF":0.82435,"AUD":1.424,"NZD":1.7584,"CAD":1.3995},"2026-10-26":{"EUR":0.89381,"GBP":0.7492,"JPY":157.45,"CHF":0.82615,"AUD":1.4236,"NZD":1.7604,"CAD":1.4028},"2026-10-27":{"EUR":0.89686,"GBP":0.7503,"JPY":157.82,"CHF":0.82861,"AUD":1.4221,"NZD":1.7535,"CAD":1.4023},"2026-10-28":{"EUR":0.89823,"GBP":0.75258,"JPY":157.96,"CHF":0.83059,"AUD":1.4219,"NZD":1.7815,"CAD":1.4047},"2026-10-29":{"EUR":0.89847,"GBP":0.75093,"JPY":158.06,"CHF":0.82857,"AUD":1.4234,"NZD":1.7805,"CAD":1.3996},"2026-10-30":{"EUR":0.89509,"GBP":0.74633,"JPY":157.25,"CHF":0.82295,"AUD":1.4236,"NZD":1.7743,"CAD":1.3969},"2026-11-02":{"EUR":0.89158,"GBP":0.74519,"JPY":157.9,"CHF":0.81963,"AUD":1.4269,"NZD":1.7773,"CAD":1.3974},"2026-11-03":{"EUR":0.89453,"GBP":0.74567,"JPY":158.29,"CHF":0.81993,"AUD":1.4319,"NZD":1.778,"CAD":1.3975},"2026-11-04":{"EUR":0.88755,"GBP":0.74075,"JPY":158.25,"CHF":0.81548,"AUD":1.4255,"NZD":1.774,"CAD":1.3935},"2026-11-05":{"EUR":0.89095,"GBP":0.74299,"JPY":158.46,"CHF":0.81789,"AUD":1.4285,"NZD":1.7789,"CAD":1.3966},"2026-11-06":{"EUR":0.89566,"GBP":0.74711,"JPY":158.33,"CHF":0.8189,"AUD":1.4554,"NZD":1.8039,"CAD":1.4066},"2026-11-09":{"EUR":0.89342,"GBP":0.74538,"JPY":157.95,"CHF":0.81873,"AUD":1.4505,"NZD":1.7816,"CAD":1.4103},"2026-11-10":{"EUR":0.89174,"GBP":0.74501,"JPY":158.18,"CHF":0.82067,"AUD":1.4485,"NZD":1.7768,"CAD":1.4136},"2026-11-11":{"EUR":0.89871,"GBP":0.75149,"JPY":159.23,"CHF":0.82987,"AUD":1.4579,"NZD":1.791,"CAD":1.4235},"2026-11-12":{"EUR":0.90245,"GBP":0.7544,"JPY":159.7,"CHF":0.83314,"AUD":1.4661,"NZD":1.7997,"CAD":1.4249},"2026-11-13":{"EUR":0.90481,"GBP":0.75605,"JPY":160,"CHF":0.8384,"AUD":1.4738,"NZD":1.8076,"CAD":1.4258},"2026-11-16":{"EUR":0.90794,"GBP":0.75767,"JPY":159.6,"CHF":0.8393,"AUD":1.48,"NZD":1.8132,"CAD":1.4285},"2026-11-17":{"EUR":0.91,"GBP":0.75808,"JPY":159.3,"CHF":0.8402,"AUD":1.4848,"NZD":1.8186,"CAD":1.4291},"2026-11-18":{"EUR":0.91174,"GBP":0.75939,"JPY":159.42,"CHF":0.84272,"AUD":1.4856,"NZD":1.819,"CAD":1.4305},"2026-11-19":{"EUR":0.90975,"GBP":0.76038,"JPY":159.97,"CHF":0.84261,"AUD":1.49,"NZD":1.8095,"CAD":1.43},"2026-11-20":{"EUR":0.90992,"GBP":0.76192,"JPY":158.64,"CHF":0.83922,"AUD":1.5002,"NZD":1.8169,"CAD":1.4307},"2026-11-23":{"EUR":0.91416,"GBP":0.76491,"JPY":159.07,"CHF":0.83975,"AUD":1.5113,"NZD":1.8355,"CAD":1.4362}}}},"calendar":[{"title":"Core Retail Sales q/q","country":"NZD","date":"2026-11-22T16:45:00-05:00","impact":"Low","forecast":"0.8%","previous":"0.7%"},{"title":"Retail Sales q/q","country":"NZD","date":"2026-11-22T16:45:00-05:00","impact":"Low","forecast":"0.5%","previous":"-0.5%"},{"title":"Flash Manufacturing PMI","country":"AUD","date":"2026-11-22T17:00:00-05:00","impact":"Low","forecast":"","previous":"49.7"},{"title":"Flash Services PMI","country":"AUD","date":"2026-11-22T17:00:00-05:00","impact":"Low","forecast":"","previous":"47.8"},{"title":"Bank Holiday","country":"JPY","date":"2026-11-22T19:00:00-05:00","impact":"Holiday","forecast":"","previous":""},{"title":"French Flash Manufacturing PMI","country":"EUR","date":"2026-11-23T03:15:00-05:00","impact":"Medium","forecast":"49.8","previous":"49.3"},{"title":"French Flash Services PMI","country":"EUR","date":"2026-11-23T03:15:00-05:00","impact":"Medium","forecast":"47.4","previous":"48.4"},{"title":"German Flash Manufacturing PMI","country":"EUR","date":"2026-11-23T03:30:00-05:00","impact":"Medium","forecast":"54.1","previous":"54.2"},{"title":"German Flash Services PMI","country":"EUR","date":"2026-11-23T03:30:00-05:00","impact":"Medium","forecast":"52.4","previous":"51.7"},{"title":"Flash Manufacturing PMI","country":"EUR","date":"2026-11-23T04:00:00-05:00","impact":"Low","forecast":"52.7","previous":"52.4"},{"title":"Flash Services PMI","country":"EUR","date":"2026-11-23T04:00:00-05:00","impact":"Low","forecast":"51.8","previous":"51.7"},{"title":"Flash Manufacturing PMI","country":"GBP","date":"2026-11-23T04:30:00-05:00","impact":"Medium","forecast":"53.0","previous":"52.8"},{"title":"Flash Services PMI","country":"GBP","date":"2026-11-23T04:30:00-05:00","impact":"Medium","forecast":"53.0","previous":"53.1"},{"title":"MPC Member Pill Speaks","country":"GBP","date":"2026-11-23T08:00:00-05:00","impact":"Low","forecast":"","previous":""},{"title":"Corporate Profits q/q","country":"CAD","date":"2026-11-23T08:32:00-05:00","impact":"Low","forecast":"","previous":"8.7%"},{"title":"Flash Manufacturing PMI","country":"USD","date":"2026-11-23T09:45:00-05:00","impact":"Medium","forecast":"54.5","previous":"56.0"},{"title":"Flash Services PMI","country":"USD","date":"2026-11-23T09:45:00-05:00","impact":"Medium","forecast":"55.6","previous":"57.9"},{"title":"FOMC Member Williams Speaks","country":"USD","date":"2026-11-23T16:00:00-05:00","impact":"Low","forecast":"","previous":""},{"title":"Flash Manufacturing PMI","country":"JPY","date":"2026-11-23T19:30:00-05:00","impact":"Low","forecast":"53.5","previous":"53.3"},{"title":"German ifo Business Climate","country":"EUR","date":"2026-11-24T04:00:00-05:00","impact":"Low","forecast":"90.5","previous":"90.2"},{"title":"CBI Realized Sales","country":"GBP","date":"2026-11-24T06:00:00-05:00","impact":"Low","forecast":"-27","previous":"-10"},{"title":"MPC Member Greene Speaks","country":"GBP","date":"2026-11-24T07:30:00-05:00","impact":"Low","forecast":"","previous":""},{"title":"ADP Weekly Employment Change","country":"USD","date":"2026-11-24T08:15:00-05:00","impact":"Low","forecast":"","previous":"23.8K"},{"title":"CB Leading Index m/m","country":"CNY","date":"2026-11-24T09:00:00-05:00","impact":"Low","forecast":"","previous":"-0.1%"},{"title":"Belgian NBB Business Climate","country":"EUR","date":"2026-11-24T09:00:00-05:00","impact":"Low","forecast":"-9.4","previous":"-9.8"},{"title":"HPI m/m","country":"USD","date":"2026-11-24T09:00:00-05:00","impact":"Low","forecast":"0.2%","previous":"0.3%"},{"title":"S&P/CS Composite-20 HPI y/y","country":"USD","date":"2026-11-24T09:00:00-05:00","impact":"Low","forecast":"2.7%","previous":"2.7%"},{"title":"CB Consumer Confidence","country":"USD","date":"2026-11-24T10:00:00-05:00","impact":"Medium","forecast":"92.4","previous":"91.7"},{"title":"Richmond Manufacturing Index","country":"USD","date":"2026-11-24T10:00:00-05:00","impact":"Low","forecast":"-2","previous":"-2"},{"title":"BOC Gov Macklem Speaks","country":"CAD","date":"2026-11-24T12:25:00-05:00","impact":"Medium","forecast":"","previous":""},{"title":"API Weekly Statistical Bulletin","country":"USD","date":"2026-11-24T16:30:00-05:00","impact":"Low","forecast":"","previous":""},{"title":"SPPI y/y","country":"JPY","date":"2026-11-24T18:50:00-05:00","impact":"Low","forecast":"3.6%","previous":"3.7%"},{"title":"CPI m/m","country":"AUD","date":"2026-11-24T19:30:00-05:00","impact":"High","forecast":"0.4%","previous":"0.8%"},{"title":"CPI y/y","country":"AUD","date":"2026-11-24T19:30:00-05:00","impact":"High","forecast":"4.7%","previous":"4.3%"},{"title":"Trimmed Mean CPI m/m","country":"AUD","date":"2026-11-24T19:30:00-05:00","impact":"High","forecast":"0.3%","previous":"0.3%"},{"title":"Construction Work Done q/q","country":"AUD","date":"2026-11-24T19:30:00-05:00","impact":"Low","forecast":"0.8%","previous":"-2.1%"},{"title":"BOJ Core CPI y/y","country":"JPY","date":"2026-11-25T00:00:00-05:00","impact":"Low","forecast":"2.5%","previous":"2.4%"},{"title":"German Final GDP q/q","country":"EUR","date":"2026-11-25T02:00:00-05:00","impact":"Low","forecast":"0.2%","previous":"0.2%"},{"title":"UBS Economic Expectations","country":"CHF","date":"2026-11-25T04:00:00-05:00","impact":"Low","forecast":"","previous":"-15.3"},{"title":"German 10-y Bond Auction","country":"EUR","date":"2026-11-25T05:42:00-05:00","impact":"Low","forecast":"","previous":"3.37|1.1"},{"title":"Core PCE Price Index m/m","country":"USD","date":"2026-11-25T08:30:00-05:00","impact":"High","forecast":"0.3%","previous":"0.3%"},{"title":"Prelim GDP q/q","country":"USD","date":"2026-11-25T08:30:00-05:00","impact":"High","forecast":"3.5%","previous":"3.4%"},{"title":"Prelim GDP Price Index q/q","country":"USD","date":"2026-11-25T08:30:00-05:00","impact":"Medium","forecast":"2.3%","previous":"2.3%"},{"title":"Core Durable Goods Orders m/m","country":"USD","date":"2026-11-25T08:30:00-05:00","impact":"Low","forecast":"0.5%","previous":"0.5%"},{"title":"Durable Goods Orders m/m","country":"USD","date":"2026-11-25T08:30:00-05:00","impact":"Low","forecast":"0.7%","previous":"1.8%"},{"title":"Personal Income m/m","country":"USD","date":"2026-11-25T08:30:00-05:00","impact":"Low","forecast":"0.4%","previous":"0.2%"},{"title":"Personal Spending m/m","country":"USD","date":"2026-11-25T08:30:00-05:00","impact":"Low","forecast":"0.4%","previous":"0.5%"},{"title":"Unemployment Claims","country":"USD","date":"2026-11-25T08:30:00-05:00","impact":"Low","forecast":"201K","previous":"203K"},{"title":"New Home Sales","country":"USD","date":"2026-11-25T10:00:00-05:00","impact":"Low","forecast":"650K","previous":"676K"},{"title":"Crude Oil Inventories","country":"USD","date":"2026-11-25T10:30:00-05:00","impact":"Low","forecast":"","previous":"3.4M"},{"title":"Natural Gas Storage","country":"USD","date":"2026-11-25T12:00:00-05:00","impact":"Low","forecast":"-19B","previous":"20B"},{"title":"Beige Book","country":"USD","date":"2026-11-25T14:00:00-05:00","impact":"Low","forecast":"","previous":""},{"title":"Private Capital Expenditure q/q","country":"AUD","date":"2026-11-25T19:30:00-05:00","impact":"Low","forecast":"4.5%","previous":"-3.6%"},{"title":"RBA Bulletin","country":"AUD","date":"2026-11-25T19:30:00-05:00","impact":"Low","forecast":"","previous":""},{"title":"German GfK Consumer Climate","country":"EUR","date":"2026-11-26T02:00:00-05:00","impact":"Low","forecast":"-29.4","previous":"-30.8"},{"title":"M3 Money Supply y/y","country":"EUR","date":"2026-11-26T04:00:00-05:00","impact":"Low","forecast":"3.5%","previous":"3.5%"},{"title":"Private Loans y/y","country":"EUR","date":"2026-11-26T04:00:00-05:00","impact":"Low","forecast":"3.2%","previous":"3.1%"},{"title":"BOE Financial Stability Report","country":"GBP","date":"2026-11-26T05:30:00-05:00","impact":"Low","forecast":"","previous":""},{"title":"FPC Meeting Minutes","country":"GBP","date":"2026-11-26T05:30:00-05:00","impact":"Low","forecast":"","previous":""},{"title":"FPC Statement","country":"GBP","date":"2026-11-26T05:30:00-05:00","impact":"Low","forecast":"","previous":""},{"title":"ECB Monetary Policy Meeting Accounts","country":"EUR","date":"2026-11-26T07:30:00-05:00","impact":"Low","forecast":"","previous":""},{"title":"Bank Holiday","country":"USD","date":"2026-11-26T08:00:00-05:00","impact":"Holiday","forecast":"","previous":""},{"title":"Tokyo Core CPI y/y","country":"JPY","date":"2026-11-26T18:30:00-05:00","impact":"Medium","forecast":"3.0%","previous":"2.6%"},{"title":"French Consumer Spending m/m","country":"EUR","date":"2026-11-27T02:45:00-05:00","impact":"Low","forecast":"0.1%","previous":"-0.5%"},{"title":"French Final Private Payrolls q/q","country":"EUR","date":"2026-11-27T02:45:00-05:00","impact":"Low","forecast":"-0.1%","previous":"-0.1%"},{"title":"French Prelim CPI m/m","country":"EUR","date":"2026-11-27T02:45:00-05:00","impact":"Low","forecast":"-0.2%","previous":"0.4%"},{"title":"French Prelim GDP q/q","country":"EUR","date":"2026-11-27T02:45:00-05:00","impact":"Low","forecast":"-0.1%","previous":"-0.1%"},{"title":"Spanish Flash CPI y/y","country":"EUR","date":"2026-11-27T03:00:00-05:00","impact":"Low","forecast":"4.7%","previous":"4.9%"},{"title":"German Unemployment Change","country":"EUR","date":"2026-11-27T03:55:00-05:00","impact":"Low","forecast":"5K","previous":"4K"},{"title":"Italian 10-y Bond Auction","country":"EUR","date":"2026-11-27T05:33:00-05:00","impact":"Low","forecast":"","previous":""},{"title":"German Buba President Nagel Speaks","country":"EUR","date":"2026-11-27T07:40:00-05:00","impact":"Low","forecast":"","previous":""},{"title":"Current Account","country":"CAD","date":"2026-11-27T08:30:00-05:00","impact":"Low","forecast":"9.5B","previous":"8.8B"},{"title":"Goods Trade Balance","country":"USD","date":"2026-11-27T08:30:00-05:00","impact":"Low","forecast":"-135.9B","previous":"-134.9B"},{"title":"Prelim Wholesale Inventories m/m","country":"USD","date":"2026-11-27T08:30:00-05:00","impact":"Low","forecast":"0.5%","previous":"0.6%"}],"policy":[{"ccy":"USD","bank":"Fed","rate":4,"next":"2026-12-09","priced_bp":24,"prob":98},{"ccy":"EUR","bank":"BCE","rate":2.5,"next":"2026-12-17","priced_bp":23,"prob":91},{"ccy":"GBP","bank":"BoE","rate":4,"next":"2026-12-17","priced_bp":20,"prob":79},{"ccy":"JPY","bank":"BoJ","rate":1.25,"next":"2026-12-18","priced_bp":16,"prob":66},{"ccy":"CHF","bank":"SNB","rate":0,"next":"2026-12-10","priced_bp":4,"prob":18},{"ccy":"AUD","bank":"RBA","rate":4.85,"next":"2026-12-08","priced_bp":0,"prob":0},{"ccy":"CAD","bank":"BoC","rate":2.5,"next":"2026-12-09","priced_bp":15,"prob":62},{"ccy":"NZD","bank":"RBNZ","rate":2.75,"next":"2026-12-09","priced_bp":21,"prob":83}]};
+function createEngine(data){
+  var CCYS=['EUR','GBP','JPY','CHF','AUD','NZD','CAD'];
+  var H=data.fx.hist.rates;
+  var DATES=Object.keys(H).sort();
+  var pol={};
+  (data.policy||[]).forEach(function(p){pol[p.ccy]=p;});
+  var RET=[null];
+  for(var i=1;i<DATES.length;i++){
+    var p=H[DATES[i-1]],c=H[DATES[i]],raw={},rel={},m=0;
+    CCYS.forEach(function(k){raw[k]=Math.log(p[k]/c[k]);m+=raw[k];});
+    m/=CCYS.length;
+    CCYS.forEach(function(k){rel[k]=raw[k]-m;});
+    RET.push({date:DATES[i],raw:raw,rel:rel});
+  }
+  var last=RET.length-1;
+  function cumAt(k,h,i,rel){var s=0,n=0;for(var j=Math.max(1,i-h+1);j<=i;j++){s+=(rel?RET[j].rel:RET[j].raw)[k];n++;}return {s:s,n:n||1};}
+  function volAt(k,i,rel,w){
+    w=w||60;var a=[];
+    for(var j=Math.max(1,i-w);j<=i;j++) a.push((rel?RET[j].rel:RET[j].raw)[k]);
+    if(a.length<5) return 0.005;
+    var m=a.reduce(function(x,y){return x+y;},0)/a.length,v=0;
+    a.forEach(function(x){v+=(x-m)*(x-m);});
+    return Math.sqrt(v/(a.length-1))||0.005;
+  }
+  function zAt(k,h,i,rel){var c=cumAt(k,h,i,rel);return c.s/(volAt(k,i,rel,60)*Math.sqrt(Math.max(1,c.n)));}
+  function z5(k,i){ return k==='USD'? 0 : zAt(k,5,i,false); }
+  function pairZ(b,q,i){ return z5(b,i)-z5(q,i); }
+
+  var RATES={};
+  (data.policy||[]).forEach(function(p){RATES[p.ccy]=p.rate;});
+  var rk=Object.keys(RATES);
+  var rateAvg=rk.reduce(function(s,k){return s+RATES[k];},0)/Math.max(1,rk.length);
+  function zs(arr){var m=arr.reduce(function(a,b){return a+b;},0)/arr.length;
+    var sd=Math.sqrt(arr.reduce(function(a,b){return a+(b-m)*(b-m);},0)/Math.max(1,arr.length-1))||1;return {m:m,sd:sd};}
+  var gs=zs(rk.map(function(k){return RATES[k]-rateAvg;}));
+  var ps=zs(rk.map(function(k){return (pol[k]&&pol[k].priced_bp)||0;}));
+  function rateScore(k){
+    if(RATES[k]===undefined) return 50;
+    var zg=(RATES[k]-rateAvg-gs.m)/(gs.sd||1);
+    var zp=(((pol[k]&&pol[k].priced_bp)||0)-ps.m)/(ps.sd||1);
+    return +Math.max(2,Math.min(98,50+50*Math.tanh((0.65*zg+0.35*zp)/1.5))).toFixed(1);
+  }
+  function strengthAt(i){
+    var out={};
+    CCYS.forEach(function(k){
+      var z=0.2*zAt(k,1,i,true)+0.55*zAt(k,5,i,true)+0.25*zAt(k,20,i,true);
+      var mom=50+50*Math.tanh(z/1.6),rs=rateScore(k);
+      out[k]={mom:+mom.toFixed(1),rate:rs,score:+(0.6*mom+0.4*rs).toFixed(1),
+        z1:+zAt(k,1,i,true).toFixed(2),z5:+zAt(k,5,i,true).toFixed(2),z20:+zAt(k,20,i,true).toFixed(2)};
+    });
+    var zm=-CCYS.reduce(function(s,k){return s+zAt(k,5,i,false);},0)/CCYS.length;
+    var umom=50+50*Math.tanh(zm/1.6);
+    out.USD={mom:+umom.toFixed(1),rate:rateScore('USD'),score:+(0.6*umom+0.4*rateScore('USD')).toFixed(1),
+      z1:+(-CCYS.reduce(function(s,k){return s+zAt(k,1,i,false);},0)/CCYS.length).toFixed(2),
+      z5:+zm.toFixed(2),
+      z20:+(-CCYS.reduce(function(s,k){return s+zAt(k,20,i,false);},0)/CCYS.length).toFixed(2)};
+    return out;
+  }
+  var S=strengthAt(last);
+  var PAIRS=[['EUR','USD'],['GBP','USD'],['USD','JPY'],['AUD','USD'],['USD','CAD'],['USD','CHF'],['NZD','USD'],['EUR','GBP']];
+  function pairRet(b,q,j){
+    if(q==='USD') return RET[j].raw[b];
+    if(b==='USD') return -RET[j].raw[q];
+    return RET[j].raw[b]-RET[j].raw[q];
+  }
+  function pairVol(b,q,i){
+    var a=[];
+    for(var j=Math.max(1,i-20);j<=i;j++) a.push(pairRet(b,q,j));
+    var m=a.reduce(function(x,y){return x+y;},0)/a.length,v=0;
+    a.forEach(function(x){v+=(x-m)*(x-m);});
+    return Math.sqrt(v/(a.length-1))||0.004;
+  }
+  function pairSignal(b,q,i){
+    var z=pairZ(b,q,i);
+    var s1=zAt(b,1,i,false)-zAt(q,1,i,false),s5=z5(b,i)-z5(q,i),s20=zAt(b,20,i,false)-zAt(q,20,i,false);
+    var sg=[s1,s5,s20].map(function(x){return x>=0?1:-1;});
+    var agree=(sg[0]===sg[1]?1:0)+(sg[1]===sg[2]?1:0)+(sg[0]===sg[2]?1:0);
+    var direction=Math.abs(z)<0.35?0:(z>0?1:-1);
+    var conv=Math.abs(z)<0.35?'Neutre':Math.abs(z)<0.9?'Léger':Math.abs(z)<1.5?'Net':'Fort';
+    var conf=Math.round(25+18*Math.min(2.5,Math.abs(z))+7*agree);
+    if(direction===0) conf=Math.round(conf*0.55);
+    var v=pairVol(b,q,i);
+    return {pair:b+'/'+q,base:b,quote:q,z:+z.toFixed(2),score:+(50+50*Math.tanh(z/1.6)).toFixed(1),
+      direction:direction,conviction:conv,confidence:Math.max(15,Math.min(92,conf)),
+      vol1d:+(100*v).toFixed(2),exp5d:+(100*v*Math.sqrt(5)).toFixed(2),
+      z1:+s1.toFixed(2),z20:+s20.toFixed(2),agree:agree};
+  }
+  var signals=PAIRS.map(function(p){return pairSignal(p[0],p[1],last);});
+
+  function backtest(fwd,thr){
+    fwd=fwd||5;thr=thr===undefined?0.35:thr;
+    var split=Math.floor(last*0.7),rows=[];
+    PAIRS.forEach(function(p){
+      var b=p[0],q=p[1],is={h:0,n:0},oos={h:0,n:0};
+      for(var i=100;i<=last-fwd;i++){
+        var z=pairZ(b,q,i);
+        if(Math.abs(z)<thr) continue;
+        var f=0;
+        for(var j=i+1;j<=i+fwd;j++) f+=pairRet(b,q,j);
+        if(Math.abs(f)<1e-6) continue;
+        var k=i<split?'is':'oos';
+        (k==='is'?is:oos).n++;
+        if((z>0&&f>0)||(z<0&&f<0)) (k==='is'?is:oos).h++;
+      }
+      function pct(o){return o.n?Math.round(100*o.h/o.n):null;}
+      rows.push({pair:b+'/'+q,isN:is.n,isHit:pct(is),oosN:oos.n,oosHit:pct(oos)});
+    });
+    var a={isN:0,isH:0,oosN:0,oosH:0};
+    rows.forEach(function(r){
+      if(r.isN){a.isN+=r.isN;a.isH+=r.isN*r.isHit/100;}
+      if(r.oosN){a.oosN+=r.oosN;a.oosH+=r.oosN*r.oosHit/100;}
+    });
+    return {rows:rows,fwd:fwd,thr:thr,
+      isHit:a.isN?Math.round(100*a.isH/a.isN):null,
+      oosHit:a.oosN?Math.round(100*a.oosH/a.oosN):null,
+      isN:a.isN,oosN:a.oosN};
+  }
+  function corr(a,b,i,days){
+    var x=[],y=[];
+    for(var j=Math.max(1,i-days+1);j<=i;j++){x.push(RET[j].raw[a]);y.push(RET[j].raw[b]);}
+    var mx=x.reduce(function(s,v){return s+v;},0)/x.length,my=y.reduce(function(s,v){return s+v;},0)/y.length;
+    var sxy=0,sx=0,sy=0;
+    for(var k=0;k<x.length;k++){sxy+=(x[k]-mx)*(y[k]-my);sx+=(x[k]-mx)*(x[k]-mx);sy+=(y[k]-my)*(y[k]-my);}
+    return sxy/Math.sqrt((sx*sy)||1);
+  }
+  function corrMatrix(days){return CCYS.map(function(a){return CCYS.map(function(b){return a===b?1:+corr(a,b,last,days||30).toFixed(2);});});}
+  var now=new Date(data.generated_at).getTime();
+  function upcoming(hours,onlyHigh){
+    return (data.calendar||[]).filter(function(e){
+      var t=new Date(e.date).getTime();
+      if(t<now||t>now+hours*3600e3) return false;
+      return onlyHigh?(e.impact==='High'):(e.impact==='High'||e.impact==='Medium');
+    }).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  }
+  function eventRisk(k){
+    var r=0;
+    upcoming(72).forEach(function(e){ if(e.country!==k) return; r+=e.impact==='High'?2:0.7; });
+    return +r.toFixed(1);
+  }
+  var risk={};
+  ['USD','EUR','GBP','JPY','CHF','AUD','NZD','CAD'].forEach(function(k){risk[k]=eventRisk(k);});
+  return {CCYS:CCYS,DATES:DATES,RET:RET,last:last,S:S,signals:signals,backtest:backtest,
+    corrMatrix:corrMatrix,risk:risk,pol:pol,RATES:RATES,rateAvg:rateAvg,
+    zAt:zAt,zc:pairZ,strengthAt:strengthAt,upcoming:upcoming,pairVol:pairVol,pairRet:pairRet,
+    span:{from:DATES[1],to:DATES[last],n:last}};
+}
+if (typeof module!=='undefined') module.exports=createEngine;
+
+var E=createEngine(DATA);
+var PAIRLIST=[["EUR","USD"],["GBP","USD"],["USD","JPY"],["AUD","USD"],["USD","CAD"],["USD","CHF"],["NZD","USD"],["EUR","GBP"]];
+var MON=["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+var DAY=["dim.","lun.","mar.","mer.","jeu.","ven.","sam."];
+function n2(x,d){if(x===null||x===undefined||isNaN(x))return "—";return Number(x).toFixed(d===undefined?2:d);}
+function sign(x){return x>0?"+":"";}
+function cls(x){return x>0.0001?"up":(x<-0.0001?"down":"flat");}
+function dt(d){var t=new Date(d);return DAY[t.getDay()]+" "+t.getDate()+" "+MON[t.getMonth()];}
+function hm(d){var t=new Date(d);return ("0"+t.getHours()).slice(-2)+":"+("0"+t.getMinutes()).slice(-2);}
+function countdown(d){var ms=new Date(d).getTime()-Date.now();if(ms<0)return "publié";var h=ms/3600000;
+  if(h<1)return "dans "+Math.max(1,Math.round(ms/60000))+" min";
+  if(h<24)return "dans "+Math.floor(h)+" h "+Math.round((h-Math.floor(h))*60)+" min";
+  return "dans "+Math.round(h/24)+" j";}
+function pairPrice(b,q){var L=DATA.fx.latest.rates;if(b==="USD")return 1/L[q];if(q==="USD")return L[b];return L[b]/L[q];}
+function pairChg(b,q){var H=DATA.fx.hist.rates,D=Object.keys(H).sort(),a=H[D[D.length-2]],c=H[D[D.length-1]];
+  function px(o,b,q){if(b==="USD")return 1/o[q];if(q==="USD")return o[b];return o[b]/o[q];}
+  return (px(c,b,q)/px(a,b,q)-1)*100;}
+function pips(v,b,q){var big=(q==="JPY"||b==="JPY")?100:10000;return Math.round(v*pairPrice(b,q)*big);}
+function tickerHTML(){return PAIRLIST.map(function(p){var v=pairPrice(p[0],p[1]),c=pairChg(p[0],p[1]);
+  return '<div class="tick"><div class="p mono">'+p[0]+'/'+p[1]+'</div><div class="v mono">'+n2(v,v>20?3:5)+'</div><div class="c mono '+cls(c)+'">'+sign(c)+n2(c,2)+'%</div></div>';}).join("");}
+function whyLines(s){
+  var B=E.S[s.base],Q=E.S[s.quote],pb=E.pol[s.base],pq=E.pol[s.quote],out=[];
+  out.push(s.base+" : score "+n2(B.score,1)+"/100, z 5j "+n2(B.z5,2)+" ; "+s.quote+" : score "+n2(Q.score,1)+"/100, z 5j "+n2(Q.z5,2)+".");
+  out.push("Écart de momentum "+n2(s.z,2)+" écart-type, "+(s.agree===3?"les trois horizons confirment":s.agree===2?"deux horizons sur trois confirment":"horizons divergents")+".");
+  if(pb&&pq) out.push("Portage "+pb.bank+" "+n2(pb.rate,2)+"% contre "+pq.bank+" "+n2(pq.rate,2)+"% ; anticipations "+pb.priced_bp+" pb contre "+pq.priced_bp+" pb.");
+  var ev=E.upcoming(120).filter(function(e){return e.country===s.base||e.country===s.quote;}).slice(0,2);
+  if(ev.length) out.push("Risque : "+ev.map(function(e){return e.title+" ("+e.country+", "+dt(e.date)+" "+hm(e.date)+")";}).join(" ; ")+".");
+  out.push("Volatilité 20j "+n2(s.vol1d,2)+"%/jour, amplitude ±"+n2(s.exp5d,2)+"% à 5 séances (1σ).");
+  return out;}
+function viewReads(){
+  var top=E.signals.slice().sort(function(a,b){return Math.abs(b.z)-Math.abs(a.z);}).slice(0,4);
+  var usd=E.S.USD,nextHigh=E.upcoming(168,true)[0],lastDate=Object.keys(DATA.fx.hist.rates).sort().pop();
+  var cards=top.map(function(s){var ch=pairChg(s.base,s.quote);
+    return '<div class="card sig"><div class="top"><div class="pair mono">'+s.pair+'</div><div class="badge '+(s.direction>0?'b-long':s.direction<0?'b-short':'b-flat')+'">'+(s.direction>0?'HAUSSIER':s.direction<0?'BAISSIER':'NEUTRE')+'</div></div>'
+    +'<div style="display:flex;gap:12px;align-items:baseline"><div class="big mono">'+n2(pairPrice(s.base,s.quote),(s.quote==="JPY"||s.base==="JPY")?3:5)+'</div><div class="mono small '+cls(ch)+'">'+sign(ch)+n2(ch,2)+'%</div></div>'
+    +'<div><div class="kv"><span>Conviction</span><span class="mono">'+s.conviction+' · z '+n2(s.z,2)+'</span></div>'
+    +'<div class="kv"><span>Confiance</span><span class="mono">'+s.confidence+'%</span></div>'
+    +'<div class="kv"><span>Amplitude 5j (1σ)</span><span class="mono">±'+n2(s.exp5d,2)+'% · '+pips(s.exp5d/100,s.base,s.quote)+' pips</span></div></div>'
+    +'<div class="bar"><i style="width:'+s.confidence+'%;background:'+(s.direction>0?'var(--up)':s.direction<0?'var(--down)':'var(--muted)')+'"></i></div>'
+    +'<ul class="why">'+whyLines(s).slice(0,3).map(function(l){return '<li>'+l+'</li>';}).join("")+'</ul></div>';}).join("");
+  var rows=E.signals.map(function(s){var ch=pairChg(s.base,s.quote);
+    return '<tr><td class="mono">'+s.pair+'</td><td class="r mono">'+n2(pairPrice(s.base,s.quote),(s.quote==="JPY"||s.base==="JPY")?3:5)+'</td>'
+    +'<td class="r mono '+cls(ch)+'">'+sign(ch)+n2(ch,2)+'%</td>'
+    +'<td><span class="badge '+(s.direction>0?'b-long':s.direction<0?'b-short':'b-flat')+'">'+(s.direction>0?'LONG':s.direction<0?'SHORT':'FLAT')+'</span></td>'
+    +'<td class="mono r">'+s.conviction+'</td><td class="mono r">'+n2(s.z,2)+'</td><td class="mono r">'+s.confidence+'%</td>'
+    +'<td class="mono r">±'+n2(s.exp5d,2)+'%</td><td class="mono r">'+pips(s.exp5d/100,s.base,s.quote)+'</td></tr>';}).join("");
+  return '<div class="grid g4">'
+  +'<div class="card"><h3>Biais dollar agrégé</h3><div class="big mono">'+n2(usd.score,1)+'</div><div class="small">sur 100 · momentum '+n2(usd.mom,1)+' · portage '+n2(usd.rate,1)+'</div></div>'
+  +'<div class="card"><h3>Régime de risque 72 h</h3><div class="big mono">'+riskRegime()+'</div><div class="small">'+riskDetail()+'</div></div>'
+  +'<div class="card"><h3>Prochain événement majeur</h3><div style="font-size:15px;font-weight:600;line-height:1.3;margin-bottom:4px">'+(nextHigh?nextHigh.title:"Aucun sous 7 jours")+'</div><div class="small">'+(nextHigh?nextHigh.country+" · "+dt(nextHigh.date)+" "+hm(nextHigh.date)+" · "+countdown(nextHigh.date):"—")+'</div></div>'
+  +'<div class="card"><h3>Fraîcheur des données</h3><div style="font-size:15px;font-weight:600" class="mono">'+dt(lastDate)+'</div><div class="small">clôture '+lastDate+' · '+E.span.n+' séances · généré le '+DATA.generated_at.slice(0,10)+'</div></div></div>'
+  +'<h2 class="sec">Lectures directionnelles — signaux les plus marqués</h2><div class="grid g4">'+cards+'</div>'
+  +'<h2 class="sec">Tous les signaux</h2><div class="card" style="padding:4px 6px"><table><thead><tr><th>Paire</th><th class="r">Spot</th><th class="r">Var. 1j</th><th>Biais</th><th class="r">Conviction</th><th class="r">z-score</th><th class="r">Confiance</th><th class="r">Ampl. 5j</th><th class="r">Équiv. pips</th></tr></thead><tbody>'+rows+'</tbody></table></div>';}
+function riskRegime(){var t=0;Object.keys(E.risk).forEach(function(k){t+=E.risk[k];});return t>=8?"Élevé":t>=4?"Modéré":"Calme";}
+function riskDetail(){var t=0,w="USD",wv=0;Object.keys(E.risk).forEach(function(k){t+=E.risk[k];if(E.risk[k]>wv){wv=E.risk[k];w=k;}});return "score "+n2(t,1)+" · exposition max "+w+" ("+n2(wv,1)+")";}
+function viewCalendar(){
+  var ev=(DATA.calendar||[]).slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  var rows=ev.map(function(e){var past=new Date(e.date).getTime()<Date.now();
+    return '<tr><td class="mono">'+dt(e.date)+'</td><td class="mono">'+hm(e.date)+'</td><td class="mono">'+e.country+'</td>'
+    +'<td style="white-space:normal">'+e.title+'</td><td><span class="pill i-'+e.impact+'">'+e.impact.toUpperCase()+'</span></td>'
+    +'<td class="r mono">'+(e.forecast||"—")+'</td><td class="r mono">'+(e.previous||"—")+'</td>'
+    +'<td class="r mono '+(past?"flat":"")+'">'+countdown(e.date)+'</td></tr>';}).join("");
+  return '<div class="warn">Le flux couvre la semaine en cours et ne fournit pas les valeurs réalisées : la surprise n\'est pas calculée automatiquement.</div>'
+  +'<h2 class="sec">Calendrier économique</h2><div class="card" style="padding:4px 6px"><table><thead><tr><th>Date</th><th>Heure</th><th>Dev.</th><th>Événement</th><th>Impact</th><th class="r">Prévu</th><th class="r">Précédent</th><th class="r">Échéance</th></tr></thead><tbody>'+rows+'</tbody></table></div>';}
+function viewStrength(){
+  var arr=E.CCYS.concat(["USD"]).map(function(k){return {k:k,v:E.S[k]};}).sort(function(a,b){return b.v.score-a.v.score;});
+  var bars=arr.map(function(o){var w=o.v.score,col=w>=60?"var(--up)":w<=40?"var(--down)":"var(--muted)";
+    return '<div class="hm"><div class="nm mono">'+o.k+'</div><div class="tr"><i style="width:'+w+'%;background:'+col+'"></i></div><div class="vl mono">'+n2(w,1)+'</div></div>';}).join("");
+  var zrows=E.CCYS.concat(["USD"]).map(function(k){var v=E.S[k];
+    function cell(z){var b=Math.max(-2.5,Math.min(2.5,z)),a=Math.abs(b)/2.5,col=b>0?"47,212,138":"255,93,108";
+      return '<td class="mono" style="background:rgba('+col+','+(0.1+0.55*a).toFixed(2)+')">'+n2(z,2)+'</td>';}
+    return '<tr><td class="mono" style="color:var(--muted);text-align:left">'+k+'</td>'+cell(v.z1)+cell(v.z5)+cell(v.z20)+'<td class="mono">'+n2(v.score,1)+'</td></tr>';}).join("");
+  var M=E.corrMatrix(30),ch=E.CCYS.map(function(c){return '<th>'+c+'</th>';}).join("");
+  var crow=E.CCYS.map(function(a,i){return '<tr><td class="mono" style="color:var(--muted);text-align:left">'+a+'</td>'+E.CCYS.map(function(b,j){var v=M[i][j],a2=Math.abs(v),col=v>0?"47,212,138":"255,93,108";
+    return '<td class="mono" style="background:rgba('+col+','+(a2*0.45).toFixed(2)+')">'+n2(v,2)+'</td>';}).join("")+'</tr>';}).join("");
+  return '<h2 class="sec">Force relative des devises</h2><div class="split">'
+  +'<div class="card"><h3>Classement composite · momentum 60 % / portage 40 %</h3>'+bars
+  +'<div class="legend">Rendements logarithmiques contre USD, neutralisés en coupe transversale, normalisés par la volatilité 60 séances sur 1, 5 et 20 jours.</div></div>'
+  +'<div class="card"><h3>Exposition événementielle 72 h</h3>'+["USD","EUR","GBP","JPY","AUD","CAD","NZD","CHF"].sort(function(a,b){return E.risk[b]-E.risk[a];}).map(function(k){var v=E.risk[k],w=Math.min(100,v/8*100);
+    return '<div class="hm"><div class="nm mono">'+k+'</div><div class="tr"><i style="width:'+w+'%;background:var(--amber)"></i></div><div class="vl mono">'+n2(v,1)+'</div></div>';}).join("")
+  +'<div class="legend">Somme pondérée des publications à fort (2) et moyen (0,7) impact.</div></div></div>'
+  +'<h2 class="sec">Z-scores par horizon</h2><div class="card" style="padding:4px 6px"><table class="heat"><thead><tr><th></th><th>1 jour</th><th>5 jours</th><th>20 jours</th><th>Score</th></tr></thead><tbody>'+zrows+'</tbody></table></div>'
+  +'<h2 class="sec">Corrélations 30 séances</h2><div class="card" style="padding:4px 6px"><table class="heat"><thead><tr><th></th>'+ch+'</tr></thead><tbody>'+crow+'</tbody></table></div>';}
+function viewRates(){
+  var rows=(DATA.policy||[]).slice().sort(function(a,b){return b.rate-a.rate;}).map(function(p){var gap=p.rate-E.RATES.USD;
+    var dir=p.priced_bp>8?"Hausse":p.priced_bp<-8?"Baisse":"Statut quo";
+    return '<tr><td class="mono">'+p.ccy+'</td><td>'+p.bank+'</td><td class="r mono">'+n2(p.rate,2)+'%</td>'
+    +'<td class="r mono '+(gap>=0?"up":"down")+'">'+sign(gap)+n2(gap,2)+' pt</td><td class="mono">'+dt(p.next)+'</td>'
+    +'<td class="r mono">'+p.priced_bp+' pb</td><td class="r mono">'+p.prob+'%</td><td class="mono">'+dir+'</td></tr>';}).join("");
+  return '<div class="warn">Anticipations relevées le 20 novembre 2026 (consensus, prochaine réunion de chaque banque). Elles évoluent en continu : à revérifier avant toute décision.</div>'
+  +'<h2 class="sec">Taux directeurs et anticipations</h2><div class="card" style="padding:4px 6px"><table><thead><tr><th>Dev.</th><th>Banque</th><th class="r">Taux</th><th class="r">Écart vs Fed</th><th>Prochaine réunion</th><th class="r">Intégré</th><th class="r">Probabilité</th><th>Orientation</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+  +'<div class="split" style="margin-top:14px"><div class="card"><h3>Lecture</h3><div class="note">Le dollar conserve le portage le plus élevé du panier (4,00 %), avec 24 pb de resserrement intégrés pour le 9 décembre. L\'Australie offre le taux nominal le plus haut (4,85 %) mais la RBA est vue à l\'arrêt ; le franc suisse reste le financement le moins rémunéré (0,00 %).<br><br>Ces écarts sont standardisés en coupe transversale puis combinés à 40 % au momentum dans le score de force.</div></div>'
+  +'<div class="card"><h3>Trajectoire intégrée par le marché</h3>'+(DATA.policy||[]).slice().sort(function(a,b){return b.priced_bp-a.priced_bp;}).map(function(p){var w=Math.min(100,Math.abs(p.priced_bp)/25*100);
+    return '<div class="hm"><div class="nm mono">'+p.ccy+'</div><div class="tr"><i style="width:'+w+'%;background:'+(p.priced_bp>=0?"var(--up)":"var(--down)")+'"></i></div><div class="vl mono">'+p.priced_bp+' pb</div></div>';}).join("")
+  +'<div class="legend">Points de base intégrés jusqu\'à la prochaine réunion.</div></div></div>';}
+function viewBacktest(){
+  var bt=E.backtest(5,0.35);
+  var rows=bt.rows.map(function(b){return '<tr><td class="mono">'+b.pair+'</td><td class="r mono">'+b.isN+'</td>'
+    +'<td class="r mono">'+(b.isHit===null?"—":b.isHit+"%")+'</td><td class="r mono">'+b.oosN+'</td>'
+    +'<td class="r mono" style="color:'+(b.oosHit>=55?"var(--up)":b.oosHit>=45?"var(--txt)":"var(--down)")+'">'+(b.oosHit===null?"—":b.oosHit+"%")+'</td></tr>';}).join("");
+  return '<div class="warn">Signal évalué sur '+E.span.n+' séances, horizon 5 séances, seuil |z| ≥ 0,35, sans coûts ni slippage. Calibration sur les 70 % premiers jours, validation sur les 30 % suivants. Un taux proche de 50 % signifie aucune valeur ajoutée mesurable.</div>'
+  +'<h2 class="sec">Réussite du signal momentum</h2><div class="split"><div class="card" style="padding:4px 6px"><table><thead><tr><th>Paire</th><th class="r">Calibrage</th><th class="r">Réussi</th><th class="r">Validation</th><th class="r">Réussi</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+  +'<div class="card"><h3>Synthèse</h3><div class="kv"><span>Hors échantillon</span><span class="mono">'+(bt.oosHit===null?"—":bt.oosHit+"%")+' <span class="small">('+bt.oosN+' signaux)</span></span></div>'
+  +'<div class="kv"><span>Échantillon de calibrage</span><span class="mono">'+(bt.isHit===null?"—":bt.isHit+"%")+' <span class="small">('+bt.isN+')</span></span></div>'
+  +'<div class="kv"><span>Période</span><span class="mono">'+E.span.from+' → '+E.span.to+'</span></div>'
+  +'<div class="note" style="margin-top:10px">Cette page existe pour rendre le modèle auditable : afficher des signaux sans mesure d\'erreur hors échantillon revient à demander un acte de foi.</div></div></div>';}
+function viewNotes(){
+  return '<h2 class="sec">Méthode</h2><div class="card"><div class="note">'
+  +'<b>Force relative.</b> Rendements logarithmiques par devise contre USD sur 1, 5 et 20 séances, neutralisés en coupe transversale, divisés par la volatilité 60 séances, composite 20/55/25.<br><br>'
+  +'<b>Portage.</b> Écart de taux directeur au panier et points de base intégrés par le marché, standardisés puis pondérés 65/35.<br><br>'
+  +'<b>Lecture directionnelle.</b> Écart de momentum à 5 séances entre les deux jambes, accord des trois horizons comme mesure de confiance, amplitude attendue déduite de la volatilité réalisée 20 séances.<br><br>'
+  +'<b>Limites.</b> Change en clôture quotidienne (référence BCE), sans intraday, carnet d\'ordres, positionnement ni options. Anticipations de taux figées au relevé du 20 novembre 2026. Aucune exécution d\'ordres.'
+  +'</div></div><h2 class="sec">Sources</h2><div class="card"><div class="kv"><span>Calendrier</span><span>Forex Factory, flux hebdomadaire</span></div>'
+  +'<div class="kv"><span>Change et historique</span><span>Frankfurter, référence BCE</span></div>'
+  +'<div class="kv"><span>Taux directeurs</span><span>Fed H.15, BCE, BoE, BoJ, SNB, RBA, BoC, RBNZ</span></div>'
+  +'<div class="kv"><span>Anticipations</span><span>Contrats à terme de taux, 20/11/2026</span></div>'
+  +'<div class="kv"><span>Généré le</span><span class="mono">'+DATA.generated_at+'</span></div></div>'
+  +'<div class="warn" style="margin-top:14px">Outil d\'analyse et de simulation. Ni conseil en investissement, ni recommandation personnalisée. Les performances passées ne préjugent pas des performances futures.</div>';}
+var VIEWS=[["reads","Lectures IA",viewReads],["calendar","Calendrier",viewCalendar],["strength","Force devises",viewStrength],["rates","Taux & anticipations",viewRates],["backtest","Validation",viewBacktest],["notes","Méthode & sources",viewNotes]];
+var cur="reads";
+function render(){
+  document.getElementById("ticker").innerHTML=tickerHTML();
+  document.getElementById("nav").innerHTML=VIEWS.map(function(v){return '<button data-k="'+v[0]+'" class="'+(v[0]===cur?"on":"")+'">'+v[1]+'</button>';}).join("");
+  Array.prototype.forEach.call(document.querySelectorAll("#nav button"),function(b){b.onclick=function(){cur=b.getAttribute("data-k");render();};});
+  var v=VIEWS.filter(function(x){return x[0]===cur;})[0];
+  document.getElementById("view").innerHTML=v[2]();
+}
+function clock(){var d=new Date();document.getElementById("clock").textContent=dt(d)+" "+("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2)+":"+("0"+d.getSeconds()).slice(-2);}
+document.getElementById("refresh").onclick=function(){
+  var b=this;b.textContent="Actualisation…";b.disabled=true;
+  Promise.all([
+    fetch("https://nfs.faireconomy.media/ff_calendar_thisweek.json").then(function(r){return r.json();}),
+    fetch("https://api.frankfurter.dev/v1/2025-11-01.."+new Date().toISOString().slice(0,10)+"?base=USD").then(function(r){return r.json();})
+  ]).then(function(res){
+    var cal=res[0],fx=res[1];
+    if(Array.isArray(cal)&&cal.length) DATA.calendar=cal;
+    if(fx&&fx.rates){DATA.fx.hist=fx;var ks=Object.keys(fx.rates).sort();DATA.fx.latest={base:"USD",date:ks[ks.length-1],rates:fx.rates[ks[ks.length-1]]};}
+    DATA.generated_at=new Date().toISOString();
+    E=createEngine(DATA);render();
+    document.getElementById("feed").textContent="actualisé "+hm(Date.now());
+    b.textContent="Actualiser";b.disabled=false;
+  }).catch(function(){
+    document.getElementById("feed").textContent="hors ligne · instantané conservé";
+    b.textContent="Actualiser";b.disabled=false;
+  });};
+render();clock();setInterval(clock,1000);
+</script>
+</body>
+</html>
