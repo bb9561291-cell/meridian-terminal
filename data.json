@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-28T05:30:10.286Z",
+ "generated_at": "2026-11-28T06:00:23Z",
  "commodities": [
   {
    "altEntry": null,
@@ -672,17 +672,17 @@
    "direction": -1,
    "ema20": 445.36,
    "ema50": 460,
-   "entry": null,
+   "entry": 463,
    "hi20": 455.5,
    "key": "ZC",
    "lastClose": 446.75,
    "live": 463,
    "lo20": 430.25,
    "name": "Maïs",
-   "note": "Cotation incohérente (clôture 2026-11-27 à 446.75 contre dernier prix 463) : signal suspendu jusqu’à confirmation.",
+   "note": "Tendance baissière, entrée au marché avec stop au-dessus du plus haut des 5 dernières séances.",
    "point": 0.25,
-   "risk": null,
-   "riskPct": null,
+   "risk": 8.53,
+   "riskPct": 1.84,
    "rsi": 47,
    "score": -0.53,
    "spark": [
@@ -747,10 +747,10 @@
     439.75,
     446.75
    ],
-   "stop": null,
-   "tp1": null,
-   "tp2": null,
-   "tp3": null,
+   "stop": 471.53,
+   "tp1": 454.47,
+   "tp2": 445.95,
+   "tp3": 437.42,
    "unit": "USc/bushel"
   }
  ]
